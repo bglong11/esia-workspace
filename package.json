@@ -1,0 +1,25 @@
+{
+  "name": "esia-workspace",
+  "version": "1.0.0",
+  "description": "ESIA - Environmental and Social Impact Assessment Monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/app",
+    "packages/pipeline",
+    "packages/fact-extractor",
+    "packages/fact-analyzer",
+    "packages/shared"
+  ],
+  "scripts": {
+    "install": "pnpm install",
+    "dev": "pnpm --recursive run dev",
+    "dev:app": "pnpm --filter @esia/app dev",
+    "dev:pipeline": "pnpm --filter @esia/pipeline dev",
+    "build": "pnpm --recursive run build",
+    "build:app": "pnpm --filter @esia/app build",
+    "test": "pnpm --recursive run test",
+    "lint": "pnpm --recursive run lint",
+    "clean": "pnpm --recursive exec rm -rf dist node_modules"
+  },
+  "devDependencies": {}
+}

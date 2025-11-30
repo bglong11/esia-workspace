@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "baseUrl": ".",
+    "paths": {
+      "@esia/shared": ["packages/shared/src"],
+      "@esia/shared/*": ["packages/shared/src/*"],
+      "@esia/app/*": ["packages/app/*"],
+      "@esia/pipeline/*": ["packages/pipeline/*"],
+      "@esia/fact-extractor/*": ["packages/fact-extractor/*"],
+      "@esia/fact-analyzer/*": ["packages/fact-analyzer/*"]
+    }
+  }
+}
