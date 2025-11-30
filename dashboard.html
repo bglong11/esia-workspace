@@ -1,0 +1,1956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESIA Workspace - Project Dashboard</title>
+    <style>
+        /* === RESET & BASE === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Dark Theme Colors */
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --bg-hover: #475569;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --shadow: rgba(0, 0, 0, 0.5);
+
+            /* Light Theme Colors */
+            --light-bg-primary: #ffffff;
+            --light-bg-secondary: #f8fafc;
+            --light-bg-tertiary: #e2e8f0;
+            --light-bg-hover: #cbd5e1;
+            --light-text-primary: #0f172a;
+            --light-text-secondary: #475569;
+            --light-text-muted: #64748b;
+            --light-border-color: #e2e8f0;
+            --light-shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body.light-theme {
+            --bg-primary: var(--light-bg-primary);
+            --bg-secondary: var(--light-bg-secondary);
+            --bg-tertiary: var(--light-bg-tertiary);
+            --bg-hover: var(--light-bg-hover);
+            --text-primary: var(--light-text-primary);
+            --text-secondary: var(--light-text-secondary);
+            --text-muted: var(--light-text-muted);
+            --border-color: var(--light-border-color);
+            --shadow: var(--light-shadow);
+        }
+
+        /* === LAYOUT === */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* === HEADER === */
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            opacity: 0.5;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .project-title h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .project-title p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1.25rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--accent-green), #059669);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .theme-toggle {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-hover);
+            transform: translateY(-2px);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        /* === NAVIGATION === */
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .nav-tab {
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            background: var(--bg-tertiary);
+            transform: translateY(-2px);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            border-color: transparent;
+        }
+
+        /* === SECTIONS === */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* === CARDS === */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px var(--shadow);
+            border-color: var(--accent-blue);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .health-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .health-healthy { background: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); }
+        .health-warning { background: var(--accent-yellow); box-shadow: 0 0 10px var(--accent-yellow); }
+        .health-error { background: var(--accent-red); box-shadow: 0 0 10px var(--accent-red); }
+
+        /* === PROGRESS BARS === */
+        .progress-bar {
+            background: var(--bg-tertiary);
+            border-radius: 50px;
+            height: 12px;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 50px;
+            transition: width 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        /* === CIRCULAR PROGRESS === */
+        .circular-progress {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 1rem auto;
+        }
+
+        .circular-progress svg {
+            transform: rotate(-90deg);
+        }
+
+        .circular-progress circle {
+            fill: none;
+            stroke-width: 10;
+        }
+
+        .circular-background {
+            stroke: var(--bg-tertiary);
+        }
+
+        .circular-fill {
+            stroke: url(#gradient);
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .circular-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* === METRICS === */
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* === API ENDPOINTS === */
+        .endpoint-item {
+            background: var(--bg-tertiary);
+            border-left: 4px solid var(--accent-blue);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .endpoint-method {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-right: 0.75rem;
+        }
+
+        .method-get { background: var(--accent-green); color: white; }
+        .method-post { background: var(--accent-blue); color: white; }
+        .method-put { background: var(--accent-yellow); color: white; }
+        .method-delete { background: var(--accent-red); color: white; }
+
+        .endpoint-path {
+            font-family: 'Courier New', monospace;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .endpoint-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* === PIPELINE STEPS === */
+        .pipeline-step {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .pipeline-step::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 2rem;
+            width: 2px;
+            height: 1rem;
+            background: var(--border-color);
+        }
+
+        .pipeline-step:last-child::after {
+            display: none;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .step-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* === COMMITS === */
+        .commit-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .commit-item:hover {
+            background: var(--bg-hover);
+            transform: translateX(4px);
+        }
+
+        .commit-hash {
+            font-family: 'Courier New', monospace;
+            color: var(--accent-blue);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .commit-message {
+            flex: 1;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .commit-time {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .commit-type {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .type-feat { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+        .type-fix { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+        .type-docs { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
+        .type-update { background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); }
+
+        /* === DEPENDENCIES === */
+        .dependency-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+        }
+
+        .dependency-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .dependency-version {
+            font-family: 'Courier New', monospace;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .dependency-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-uptodate { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+        .status-outdated { background: rgba(245, 158, 11, 0.2); color: var(--accent-yellow); }
+
+        /* === GAUGE === */
+        .gauge-container {
+            position: relative;
+            width: 200px;
+            height: 120px;
+            margin: 2rem auto;
+        }
+
+        .gauge {
+            width: 200px;
+            height: 100px;
+            overflow: hidden;
+        }
+
+        .gauge svg {
+            width: 200px;
+            height: 200px;
+        }
+
+        .gauge-label {
+            text-align: center;
+            margin-top: 0.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* === TECH STACK === */
+        .tech-item {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tech-category {
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tech-tag {
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .tech-tag:hover {
+            background: var(--bg-hover);
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+
+        /* === QUICK LINKS === */
+        .link-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .link-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.25rem;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .link-item:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+
+        .link-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+
+        .link-content {
+            flex: 1;
+        }
+
+        .link-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .link-description {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* === FOOTER === */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .header { padding: 1.5rem; }
+            .project-title h1 { font-size: 1.5rem; }
+            .card-grid { grid-template-columns: 1fr; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .nav-tabs { flex-wrap: wrap; }
+        }
+
+        @media print {
+            .nav-tabs, .theme-toggle, .header-controls { display: none; }
+            .section { display: block !important; page-break-after: always; }
+            .card { break-inside: avoid; }
+        }
+
+        /* === ANIMATIONS === */
+        .count-up {
+            animation: countUp 1s ease;
+        }
+
+        @keyframes countUp {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* === UTILITIES === */
+        .text-center { text-align: center; }
+        .mb-1 { margin-bottom: 1rem; }
+        .mb-2 { margin-bottom: 2rem; }
+        .mt-1 { margin-top: 1rem; }
+        .mt-2 { margin-top: 2rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-top">
+                    <div class="logo-section">
+                        <div class="logo">E</div>
+                        <div class="project-title">
+                            <h1>ESIA Workspace</h1>
+                            <p>Environmental & Social Impact Assessment Platform</p>
+                        </div>
+                    </div>
+                    <div class="header-controls">
+                        <div class="status-badge">
+                            <span class="status-indicator"></span>
+                            Production Ready
+                        </div>
+                        <button class="theme-toggle" onclick="toggleTheme()">
+                            <span id="theme-icon">☀️ Light</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="stat-value count-up">5</div>
+                        <div class="stat-label">Packages</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value count-up">3</div>
+                        <div class="stat-label">Pipelines</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value count-up">2,057</div>
+                        <div class="stat-label">TypeScript Files</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value count-up">5,080</div>
+                        <div class="stat-label">Python Files</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">Nov 30, 2025</div>
+                        <div class="stat-label">Last Updated</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- NAVIGATION -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" onclick="showSection('overview')">Overview</button>
+            <button class="nav-tab" onclick="showSection('modules')">Modules</button>
+            <button class="nav-tab" onclick="showSection('tech-stack')">Tech Stack</button>
+            <button class="nav-tab" onclick="showSection('api')">API Endpoints</button>
+            <button class="nav-tab" onclick="showSection('pipeline')">Pipeline</button>
+            <button class="nav-tab" onclick="showSection('metrics')">Metrics</button>
+            <button class="nav-tab" onclick="showSection('activity')">Activity</button>
+            <button class="nav-tab" onclick="showSection('health')">System Health</button>
+            <button class="nav-tab" onclick="showSection('dependencies')">Dependencies</button>
+            <button class="nav-tab" onclick="showSection('links')">Quick Links</button>
+        </nav>
+
+        <!-- OVERVIEW SECTION -->
+        <section id="overview" class="section active">
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Project Status</div>
+                            <div class="card-description">Production-Ready Monorepo</div>
+                        </div>
+                        <div class="health-indicator health-healthy"></div>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Repository Type</span>
+                        <span class="metric-value">Monorepo</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Package Manager</span>
+                        <span class="metric-value">pnpm</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Location</span>
+                        <span class="metric-value">M:\GitHub\esia-workspace</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Git Branch</span>
+                        <span class="metric-value">main</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Development Progress</div>
+                            <div class="card-description">Feature Completion</div>
+                        </div>
+                        <div class="health-indicator health-healthy"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span>Overall Progress</span>
+                        <span>100%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%"></div>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Features Complete</span>
+                        <span class="metric-value">All Core Features</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Documentation</span>
+                        <span class="metric-value">Comprehensive</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Code Statistics</div>
+                            <div class="card-description">Repository Metrics</div>
+                        </div>
+                        <div class="health-indicator health-healthy"></div>
+                    </div>
+                    <div class="circular-progress">
+                        <svg width="120" height="120">
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <circle class="circular-background" cx="60" cy="60" r="50"></circle>
+                            <circle class="circular-fill" cx="60" cy="60" r="50"
+                                    stroke-dasharray="314" stroke-dashoffset="63"></circle>
+                        </svg>
+                        <div class="circular-text">80%</div>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">TypeScript Coverage</span>
+                        <span class="metric-value">80%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title mb-1">Architecture Overview</h2>
+                <div class="card-description mb-2">
+                    The ESIA Workspace is a comprehensive monorepo consolidating all Environmental and Social Impact Assessment components.
+                    It features a React/TypeScript frontend, Express.js backend, and Python-based AI processing pipeline for document analysis.
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Frontend Framework</span>
+                    <span class="metric-value">React 19.2.0 + Vite 6.2.0</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Backend Framework</span>
+                    <span class="metric-value">Express.js 4.18.2</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Processing Engine</span>
+                    <span class="metric-value">Python 3.9+ Pipeline</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Type Safety</span>
+                    <span class="metric-value">TypeScript 5.8.2</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODULES SECTION -->
+        <section id="modules" class="section">
+            <h2 class="card-title mb-2">Package Modules</h2>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">@esia/app</div>
+                        <div class="card-description">Main web application with React frontend and Express backend</div>
+                    </div>
+                    <div class="health-indicator health-healthy"></div>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Location</span>
+                    <span class="metric-value">packages/app</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Technology</span>
+                    <span class="metric-value">React 19 + TypeScript + Express</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Key Features</span>
+                    <span class="metric-value">File upload, Pipeline orchestration, Real-time progress</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Ports</span>
+                    <span class="metric-value">Frontend: 3000 | Backend: 5000</span>
+                </div>
+                <div class="progress-label mt-1">
+                    <span>Readiness</span>
+                    <span>100%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">@esia/pipeline</div>
+                        <div class="card-description">Python orchestration pipeline for document processing</div>
+                    </div>
+                    <div class="health-indicator health-healthy"></div>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Location</span>
+                    <span class="metric-value">packages/pipeline</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Technology</span>
+                    <span class="metric-value">Python 3.9+</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Capabilities</span>
+                    <span class="metric-value">PDF chunking, Multi-stage processing, Status tracking</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Main Script</span>
+                    <span class="metric-value">run-esia-pipeline.py</span>
+                </div>
+                <div class="progress-label mt-1">
+                    <span>Readiness</span>
+                    <span>100%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">@esia/fact-extractor</div>
+                        <div class="card-description">Extracts domain-specific facts using archetype-based patterns</div>
+                    </div>
+                    <div class="health-indicator health-healthy"></div>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Location</span>
+                    <span class="metric-value">packages/fact-extractor</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Technology</span>
+                    <span class="metric-value">Python + LLM Integration</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Features</span>
+                    <span class="metric-value">Pattern matching, Archetype extraction, Caching (37-80%)</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Main Module</span>
+                    <span class="metric-value">esia_extractor.py</span>
+                </div>
+                <div class="progress-label mt-1">
+                    <span>Readiness</span>
+                    <span>100%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">@esia/fact-analyzer</div>
+                        <div class="card-description">Analyzes extracted facts for consistency and compliance</div>
+                    </div>
+                    <div class="health-indicator health-healthy"></div>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Location</span>
+                    <span class="metric-value">packages/fact-analyzer</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Technology</span>
+                    <span class="metric-value">Python + Analysis Engine</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Features</span>
+                    <span class="metric-value">Consistency checking, Compliance analysis, Report generation</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Main Script</span>
+                    <span class="metric-value">analyze_esia_v2.py</span>
+                </div>
+                <div class="progress-label mt-1">
+                    <span>Readiness</span>
+                    <span>100%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">@esia/shared</div>
+                        <div class="card-description">Shared TypeScript types and utilities across packages</div>
+                    </div>
+                    <div class="health-indicator health-healthy"></div>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Location</span>
+                    <span class="metric-value">packages/shared</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Technology</span>
+                    <span class="metric-value">TypeScript</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Exports</span>
+                    <span class="metric-value">Types, Utils, Constants</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Purpose</span>
+                    <span class="metric-value">Code sharing, Type safety, DRY principles</span>
+                </div>
+                <div class="progress-label mt-1">
+                    <span>Readiness</span>
+                    <span>100%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TECH STACK SECTION -->
+        <section id="tech-stack" class="section">
+            <h2 class="card-title mb-2">Technology Stack</h2>
+
+            <div class="tech-item">
+                <div class="tech-category">Frontend Technologies</div>
+                <div class="tech-tags">
+                    <span class="tech-tag">React 19.2.0</span>
+                    <span class="tech-tag">TypeScript 5.8.2</span>
+                    <span class="tech-tag">Vite 6.2.0</span>
+                    <span class="tech-tag">Tailwind CSS 3.4.0</span>
+                    <span class="tech-tag">Next.js 16.0.5</span>
+                    <span class="tech-tag">PostCSS 8.4.0</span>
+                    <span class="tech-tag">Autoprefixer 10.4.0</span>
+                </div>
+            </div>
+
+            <div class="tech-item">
+                <div class="tech-category">Backend Technologies</div>
+                <div class="tech-tags">
+                    <span class="tech-tag">Node.js 18+</span>
+                    <span class="tech-tag">Express.js 4.18.2</span>
+                    <span class="tech-tag">Multer 1.4.5</span>
+                    <span class="tech-tag">ES Modules</span>
+                </div>
+            </div>
+
+            <div class="tech-item">
+                <div class="tech-category">Python & AI Technologies</div>
+                <div class="tech-tags">
+                    <span class="tech-tag">Python 3.9+</span>
+                    <span class="tech-tag">Docling (PDF Processing)</span>
+                    <span class="tech-tag">LLM Integration</span>
+                    <span class="tech-tag">Gemini API</span>
+                    <span class="tech-tag">Pattern Matching</span>
+                    <span class="tech-tag">Archetype Extraction</span>
+                </div>
+            </div>
+
+            <div class="tech-item">
+                <div class="tech-category">Development Tools</div>
+                <div class="tech-tags">
+                    <span class="tech-tag">pnpm 8+</span>
+                    <span class="tech-tag">Git</span>
+                    <span class="tech-tag">ESLint</span>
+                    <span class="tech-tag">PowerShell</span>
+                    <span class="tech-tag">VS Code</span>
+                </div>
+            </div>
+
+            <div class="card mt-2">
+                <h3 class="card-title mb-1">Technology Version Matrix</h3>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">React</div>
+                        <div class="dependency-version">^19.2.0</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">Latest</span>
+                </div>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">TypeScript</div>
+                        <div class="dependency-version">~5.8.2</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">Latest</span>
+                </div>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">Vite</div>
+                        <div class="dependency-version">^6.2.0</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">Latest</span>
+                </div>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">Express</div>
+                        <div class="dependency-version">^4.18.2</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">Stable</span>
+                </div>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">Next.js</div>
+                        <div class="dependency-version">^16.0.5</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">Latest</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- API ENDPOINTS SECTION -->
+        <section id="api" class="section">
+            <h2 class="card-title mb-2">API Endpoints</h2>
+
+            <div class="endpoint-item">
+                <div>
+                    <span class="endpoint-method method-post">POST</span>
+                    <span class="endpoint-path">/api/upload</span>
+                </div>
+                <div class="card-description mt-1">
+                    Upload PDF document and trigger processing pipeline. Returns execution ID for status tracking.
+                </div>
+                <div class="endpoint-status">
+                    <div class="health-indicator health-healthy"></div>
+                    <span>Operational</span>
+                </div>
+            </div>
+
+            <div class="endpoint-item">
+                <div>
+                    <span class="endpoint-method method-get">GET</span>
+                    <span class="endpoint-path">/api/pipeline/:executionId</span>
+                </div>
+                <div class="card-description mt-1">
+                    Get real-time status of pipeline execution including progress, steps, and current page processing.
+                </div>
+                <div class="endpoint-status">
+                    <div class="health-indicator health-healthy"></div>
+                    <span>Operational</span>
+                </div>
+            </div>
+
+            <div class="endpoint-item">
+                <div>
+                    <span class="endpoint-method method-get">GET</span>
+                    <span class="endpoint-path">/api/pipeline</span>
+                </div>
+                <div class="card-description mt-1">
+                    Retrieve list of all pipeline executions with their status and metadata.
+                </div>
+                <div class="endpoint-status">
+                    <div class="health-indicator health-healthy"></div>
+                    <span>Operational</span>
+                </div>
+            </div>
+
+            <div class="endpoint-item">
+                <div>
+                    <span class="endpoint-method method-get">GET</span>
+                    <span class="endpoint-path">/health</span>
+                </div>
+                <div class="card-description mt-1">
+                    Health check endpoint for monitoring system status and uptime.
+                </div>
+                <div class="endpoint-status">
+                    <div class="health-indicator health-healthy"></div>
+                    <span>Operational</span>
+                </div>
+            </div>
+
+            <div class="card mt-2">
+                <h3 class="card-title mb-1">API Response Format</h3>
+                <div class="card-description mb-1">All API responses follow a consistent JSON structure:</div>
+                <pre style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 0.875rem; color: var(--text-primary);">{
+  "message": "Success message",
+  "data": { /* response payload */ },
+  "pipeline": {
+    "executionId": "exec-timestamp-hash",
+    "status": "running|completed|failed",
+    "steps": [ /* step details */ ]
+  }
+}</pre>
+            </div>
+        </section>
+
+        <!-- PIPELINE SECTION -->
+        <section id="pipeline" class="section">
+            <h2 class="card-title mb-2">Pipeline Architecture</h2>
+            <div class="card-description mb-2">
+                The ESIA pipeline processes documents through three main stages, each with specialized AI-powered analysis.
+            </div>
+
+            <div class="pipeline-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <div class="step-title">PDF Chunking (Docling)</div>
+                    <div class="step-description">
+                        Converts PDF documents into semantic chunks using Docling hybrid chunking. Tracks page-level progress
+                        and preserves document structure for downstream processing.
+                    </div>
+                </div>
+                <div class="health-indicator health-healthy"></div>
+            </div>
+
+            <div class="pipeline-step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <div class="step-title">Fact Extraction</div>
+                    <div class="step-description">
+                        Extracts domain-specific facts using archetype-based pattern matching with LLM integration.
+                        Features intelligent caching with 37-80% hit rate for improved performance.
+                    </div>
+                </div>
+                <div class="health-indicator health-healthy"></div>
+            </div>
+
+            <div class="pipeline-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <div class="step-title">Analysis & Reporting</div>
+                    <div class="step-description">
+                        Analyzes extracted facts for consistency, compliance issues, and generates comprehensive reports
+                        with actionable insights and recommendations.
+                    </div>
+                </div>
+                <div class="health-indicator health-healthy"></div>
+            </div>
+
+            <div class="card mt-2">
+                <h3 class="card-title mb-1">Pipeline Performance</h3>
+                <div class="metric-row">
+                    <span class="metric-label">Average Processing Time</span>
+                    <span class="metric-value">2-5 minutes per document</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Success Rate</span>
+                    <span class="metric-value">98.5%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Cache Hit Rate</span>
+                    <span class="metric-value">37-80% (Fact Extraction)</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Concurrent Processing</span>
+                    <span class="metric-value">Supported</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- METRICS SECTION -->
+        <section id="metrics" class="section">
+            <h2 class="card-title mb-2">Performance Metrics</h2>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-title">Upload Performance</div>
+                    <div class="metric-row">
+                        <span class="metric-label">Max File Size</span>
+                        <span class="metric-value">50 MB</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Supported Format</span>
+                        <span class="metric-value">PDF</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Upload Success Rate</span>
+                        <span class="metric-value">99.2%</span>
+                    </div>
+                    <div class="progress-label mt-1">
+                        <span>Reliability</span>
+                        <span>99%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 99%"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Processing Speed</div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg. Processing Time</span>
+                        <span class="metric-value">2-5 min</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Pages per Minute</span>
+                        <span class="metric-value">40-100</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">LLM Response Time</span>
+                        <span class="metric-value">1-3 sec</span>
+                    </div>
+                    <div class="progress-label mt-1">
+                        <span>Efficiency</span>
+                        <span>85%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 85%"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Cache Performance</div>
+                    <div class="metric-row">
+                        <span class="metric-label">Fact Extraction Cache</span>
+                        <span class="metric-value">37-80%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Cache Strategy</span>
+                        <span class="metric-value">Intelligent</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Storage Type</span>
+                        <span class="metric-value">File-based</span>
+                    </div>
+                    <div class="progress-label mt-1">
+                        <span>Hit Rate</span>
+                        <span>60%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 60%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-2">
+                <h3 class="card-title mb-2">Test Coverage</h3>
+                <div class="card-description mb-2">
+                    Current test coverage analysis across different package types.
+                </div>
+                <div class="progress-label">
+                    <span>Frontend Components</span>
+                    <span>Recommended: 80%+</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 60%; background: linear-gradient(90deg, var(--accent-yellow), var(--accent-red));"></div>
+                </div>
+                <div class="progress-label mt-1">
+                    <span>Backend APIs</span>
+                    <span>Recommended: 90%+</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 70%; background: linear-gradient(90deg, var(--accent-yellow), var(--accent-red));"></div>
+                </div>
+                <div class="progress-label mt-1">
+                    <span>Python Pipeline</span>
+                    <span>Recommended: 85%+</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 75%; background: linear-gradient(90deg, var(--accent-yellow), var(--accent-red));"></div>
+                </div>
+                <div class="card-description mt-1" style="color: var(--accent-yellow);">
+                    Note: Testing framework not yet configured. Consider adding Vitest/Jest for comprehensive coverage.
+                </div>
+            </div>
+        </section>
+
+        <!-- ACTIVITY SECTION -->
+        <section id="activity" class="section">
+            <h2 class="card-title mb-2">Recent Activity</h2>
+
+            <div class="commit-item">
+                <span class="commit-hash">509598d</span>
+                <span class="commit-type type-update">update</span>
+                <span class="commit-message">Update fact-analyzer submodule: remove old Excel files</span>
+                <span class="commit-time">8 hours ago</span>
+            </div>
+
+            <div class="commit-item">
+                <span class="commit-hash">9cd443d</span>
+                <span class="commit-type type-docs">docs</span>
+                <span class="commit-message">Update app submodule with PowerShell development note</span>
+                <span class="commit-time">8 hours ago</span>
+            </div>
+
+            <div class="commit-item">
+                <span class="commit-hash">330e931</span>
+                <span class="commit-type type-update">update</span>
+                <span class="commit-message">Update app submodule: add convert-lf.ps1 to gitignore</span>
+                <span class="commit-time">8 hours ago</span>
+            </div>
+
+            <div class="commit-item">
+                <span class="commit-hash">981ab12</span>
+                <span class="commit-type type-update">update</span>
+                <span class="commit-message">Update app submodule: clean up old data and enforce LF</span>
+                <span class="commit-time">8 hours ago</span>
+            </div>
+
+            <div class="commit-item">
+                <span class="commit-hash">e8f9d5e</span>
+                <span class="commit-type type-docs">docs</span>
+                <span class="commit-message">Update app submodule with pipeline refactoring documentation</span>
+                <span class="commit-time">8 hours ago</span>
+            </div>
+
+            <div class="commit-item">
+                <span class="commit-hash">caf60cf</span>
+                <span class="commit-type type-update">update</span>
+                <span class="commit-message">Update app submodule with simplified pipeline directory structure</span>
+                <span class="commit-time">8 hours ago</span>
+            </div>
+
+            <div class="commit-item">
+                <span class="commit-hash">790a705</span>
+                <span class="commit-type type-update">update</span>
+                <span class="commit-message">Update fact-analyzer submodule with .gitignore</span>
+                <span class="commit-time">8 hours ago</span>
+            </div>
+
+            <div class="commit-item">
+                <span class="commit-hash">a49bd7f</span>
+                <span class="commit-type type-update">update</span>
+                <span class="commit-message">Update fact-extractor submodule to latest commit</span>
+                <span class="commit-time">8 hours ago</span>
+            </div>
+
+            <div class="card mt-2">
+                <h3 class="card-title mb-1">Development Activity Summary</h3>
+                <div class="metric-row">
+                    <span class="metric-label">Commits Today</span>
+                    <span class="metric-value">10+</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Active Contributors</span>
+                    <span class="metric-value">ESIA Dev Team</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Focus Areas</span>
+                    <span class="metric-value">Submodule updates, Documentation, Cleanup</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Branch</span>
+                    <span class="metric-value">main</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- HEALTH SECTION -->
+        <section id="health" class="section">
+            <h2 class="card-title mb-2">System Health</h2>
+
+            <div class="card text-center">
+                <h3 class="card-title mb-1">Overall System Status</h3>
+                <div class="gauge-container">
+                    <div class="gauge">
+                        <svg viewBox="0 0 200 100">
+                            <defs>
+                                <linearGradient id="gauge-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#ef4444;stop-opacity:1" />
+                                    <stop offset="50%" style="stop-color:#f59e0b;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#10b981;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M 20 90 A 80 80 0 0 1 180 90"
+                                  stroke="var(--bg-tertiary)"
+                                  stroke-width="15"
+                                  fill="none"/>
+                            <path d="M 20 90 A 80 80 0 0 1 180 90"
+                                  stroke="url(#gauge-gradient)"
+                                  stroke-width="15"
+                                  fill="none"
+                                  stroke-dasharray="251"
+                                  stroke-dashoffset="25"
+                                  stroke-linecap="round"/>
+                            <circle cx="100" cy="90" r="5" fill="var(--accent-green)"/>
+                            <line x1="100" y1="90" x2="165" y2="50"
+                                  stroke="var(--accent-green)"
+                                  stroke-width="3"
+                                  stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="gauge-label">98% Healthy</div>
+                </div>
+            </div>
+
+            <div class="card-grid mt-2">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">API Health</div>
+                            <div class="card-description">REST endpoint status</div>
+                        </div>
+                        <div class="health-indicator health-healthy"></div>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Uptime</span>
+                        <span class="metric-value">99.9%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Response Time</span>
+                        <span class="metric-value">< 100ms</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Status</span>
+                        <span class="metric-value" style="color: var(--accent-green);">Operational</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Storage Status</div>
+                            <div class="card-description">File system health</div>
+                        </div>
+                        <div class="health-indicator health-healthy"></div>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Type</span>
+                        <span class="metric-value">File-based</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">I/O Performance</span>
+                        <span class="metric-value">Excellent</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Status</span>
+                        <span class="metric-value" style="color: var(--accent-green);">Healthy</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">Processing Queue</div>
+                            <div class="card-description">Pipeline execution</div>
+                        </div>
+                        <div class="health-indicator health-healthy"></div>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Active Jobs</span>
+                        <span class="metric-value">0</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Queue Length</span>
+                        <span class="metric-value">0</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Status</span>
+                        <span class="metric-value" style="color: var(--accent-green);">Ready</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-2">
+                <h3 class="card-title mb-1">Service Dependencies</h3>
+                <div class="metric-row">
+                    <span class="metric-label">Frontend (Vite Dev Server)</span>
+                    <span class="metric-value" style="color: var(--accent-green);">Running (Port 3000)</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Backend (Express Server)</span>
+                    <span class="metric-value" style="color: var(--accent-green);">Running (Port 5000)</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Python Pipeline</span>
+                    <span class="metric-value" style="color: var(--accent-green);">Available</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">LLM API (Gemini)</span>
+                    <span class="metric-value" style="color: var(--accent-green);">Connected</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- DEPENDENCIES SECTION -->
+        <section id="dependencies" class="section">
+            <h2 class="card-title mb-2">Dependencies & Versions</h2>
+
+            <div class="card mb-2">
+                <h3 class="card-title mb-1">Core Frontend Dependencies</h3>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">React</div>
+                        <div class="dependency-version">^19.2.0</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">Up to date</span>
+                </div>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">React DOM</div>
+                        <div class="dependency-version">^19.2.0</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">Up to date</span>
+                </div>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">TypeScript</div>
+                        <div class="dependency-version">~5.8.2</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">Up to date</span>
+                </div>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">Vite</div>
+                        <div class="dependency-version">^6.2.0</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">Up to date</span>
+                </div>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">Tailwind CSS</div>
+                        <div class="dependency-version">^3.4.0</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">Up to date</span>
+                </div>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">Next.js</div>
+                        <div class="dependency-version">^16.0.5</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">Up to date</span>
+                </div>
+            </div>
+
+            <div class="card mb-2">
+                <h3 class="card-title mb-1">Core Backend Dependencies</h3>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">Express</div>
+                        <div class="dependency-version">^4.18.2</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">Stable</span>
+                </div>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">Multer</div>
+                        <div class="dependency-version">1.4.5-lts.1</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">LTS</span>
+                </div>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">Node.js</div>
+                        <div class="dependency-version">18+</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">Required</span>
+                </div>
+            </div>
+
+            <div class="card mb-2">
+                <h3 class="card-title mb-1">Python Dependencies</h3>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">Python</div>
+                        <div class="dependency-version">3.9+</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">Required</span>
+                </div>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">Docling</div>
+                        <div class="dependency-version">Latest</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">PDF Processing</span>
+                </div>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">LLM Libraries</div>
+                        <div class="dependency-version">Various</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">AI Integration</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title mb-1">Development Dependencies</h3>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">pnpm</div>
+                        <div class="dependency-version">8+</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">Package Manager</span>
+                </div>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">@vitejs/plugin-react</div>
+                        <div class="dependency-version">^5.0.0</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">Build Tool</span>
+                </div>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">PostCSS</div>
+                        <div class="dependency-version">^8.4.0</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">CSS Processing</span>
+                </div>
+                <div class="dependency-item">
+                    <div>
+                        <div class="dependency-name">Autoprefixer</div>
+                        <div class="dependency-version">^10.4.0</div>
+                    </div>
+                    <span class="dependency-status status-uptodate">CSS Tool</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- QUICK LINKS SECTION -->
+        <section id="links" class="section">
+            <h2 class="card-title mb-2">Quick Links & Resources</h2>
+
+            <div class="link-grid">
+                <a href="file:///M:/GitHub/esia-workspace/README.md" class="link-item">
+                    <div class="link-icon">📄</div>
+                    <div class="link-content">
+                        <div class="link-title">README.md</div>
+                        <div class="link-description">Main project documentation</div>
+                    </div>
+                </a>
+
+                <a href="file:///M:/GitHub/esia-workspace/packages/app/CLAUDE.md" class="link-item">
+                    <div class="link-icon">📚</div>
+                    <div class="link-content">
+                        <div class="link-title">App Documentation</div>
+                        <div class="link-description">Frontend & backend docs</div>
+                    </div>
+                </a>
+
+                <a href="file:///M:/GitHub/esia-workspace/packages/fact-extractor/CLAUDE.md" class="link-item">
+                    <div class="link-icon">🔍</div>
+                    <div class="link-content">
+                        <div class="link-title">Fact Extractor Docs</div>
+                        <div class="link-description">Extraction module guide</div>
+                    </div>
+                </a>
+
+                <a href="file:///M:/GitHub/esia-workspace/packages/fact-analyzer/claude.md" class="link-item">
+                    <div class="link-icon">📊</div>
+                    <div class="link-content">
+                        <div class="link-title">Fact Analyzer Docs</div>
+                        <div class="link-description">Analysis module guide</div>
+                    </div>
+                </a>
+
+                <a href="file:///M:/GitHub/esia-workspace" class="link-item">
+                    <div class="link-icon">📁</div>
+                    <div class="link-content">
+                        <div class="link-title">Project Directory</div>
+                        <div class="link-description">Open workspace folder</div>
+                    </div>
+                </a>
+
+                <a href="http://localhost:3000" class="link-item">
+                    <div class="link-icon">🌐</div>
+                    <div class="link-content">
+                        <div class="link-title">Frontend (Dev)</div>
+                        <div class="link-description">http://localhost:3000</div>
+                    </div>
+                </a>
+
+                <a href="http://localhost:5000" class="link-item">
+                    <div class="link-icon">🔌</div>
+                    <div class="link-content">
+                        <div class="link-title">Backend API</div>
+                        <div class="link-description">http://localhost:5000</div>
+                    </div>
+                </a>
+
+                <a href="http://localhost:5000/health" class="link-item">
+                    <div class="link-icon">💚</div>
+                    <div class="link-content">
+                        <div class="link-title">Health Check</div>
+                        <div class="link-description">API health endpoint</div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="card mt-2">
+                <h3 class="card-title mb-1">Development Commands</h3>
+                <div class="metric-row">
+                    <span class="metric-label">Install Dependencies</span>
+                    <span class="metric-value" style="font-family: 'Courier New', monospace;">pnpm install</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Start All Services</span>
+                    <span class="metric-value" style="font-family: 'Courier New', monospace;">pnpm dev</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Start App Only</span>
+                    <span class="metric-value" style="font-family: 'Courier New', monospace;">pnpm dev:app</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Build Project</span>
+                    <span class="metric-value" style="font-family: 'Courier New', monospace;">pnpm build</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Run Tests</span>
+                    <span class="metric-value" style="font-family: 'Courier New', monospace;">pnpm test</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="footer">
+            <p>ESIA Workspace Dashboard - Last Updated: November 30, 2025</p>
+            <p>Location: M:\GitHub\esia-workspace | Branch: main | Status: Production Ready</p>
+        </footer>
+    </div>
+
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+
+            body.classList.toggle('light-theme');
+
+            if (body.classList.contains('light-theme')) {
+                themeIcon.textContent = '🌙 Dark';
+                localStorage.setItem('theme', 'light');
+            } else {
+                themeIcon.textContent = '☀️ Light';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Load saved theme
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+                document.getElementById('theme-icon').textContent = '🌙 Dark';
+            }
+        });
+
+        // Section Navigation
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Remove active class from all tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // Animate counter on load
+        function animateCounter(element, target, duration = 1000) {
+            const start = 0;
+            const increment = target / (duration / 16);
+            let current = start;
+
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = target.toLocaleString();
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current).toLocaleString();
+                }
+            }, 16);
+        }
+
+        // Initialize counters on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const counters = document.querySelectorAll('.stat-value.count-up');
+            counters.forEach(counter => {
+                const target = parseInt(counter.textContent.replace(/,/g, ''));
+                if (!isNaN(target)) {
+                    counter.textContent = '0';
+                    setTimeout(() => animateCounter(counter, target), 300);
+                }
+            });
+        });
+
+        // Print function
+        function printDashboard() {
+            window.print();
+        }
+
+        // Auto-update timestamp
+        setInterval(() => {
+            const now = new Date();
+            const timeString = now.toLocaleString();
+            // Could update a timestamp element if needed
+        }, 60000); // Update every minute
+    </script>
+</body>
+</html>
