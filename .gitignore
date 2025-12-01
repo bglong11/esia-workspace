@@ -68,3 +68,7 @@ outputs/
 tmp/
 temp/
 *.tmp
+
+# Windows artifacts
+NUL
+nul
