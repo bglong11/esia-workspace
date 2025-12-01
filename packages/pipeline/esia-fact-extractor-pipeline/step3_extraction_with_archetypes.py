@@ -112,6 +112,18 @@ def extract_facts(chunks: List[Dict], verbose: bool = False) -> Dict[str, Any]:
             results['sections_skipped'] += 1
             continue
 
+        # Filter domains by confidence threshold (Phase 1 optimization)
+        CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.5"))
+        domain_matches_filtered = [m for m in domain_matches if m['confidence'] >= CONFIDENCE_THRESHOLD]
+
+        if not domain_matches_filtered:
+            if verbose:
+                print(f"[{section_idx}/{len(sections)}] SKIP: No domains above confidence {CONFIDENCE_THRESHOLD}")
+            results['sections_skipped'] += 1
+            continue
+
+        domain_matches = domain_matches_filtered
+
         print(f"[{section_idx}/{len(sections)}] {section_name}")
 
         # Combine text from all chunks in this section

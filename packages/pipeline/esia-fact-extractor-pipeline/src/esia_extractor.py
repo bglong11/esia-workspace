@@ -141,6 +141,8 @@ class ESIAExtractor:
         
         # Initialize extractors cache
         self.extractors = {}
+        # Cache for empty results (Phase 1 optimization)
+        self.empty_result_cache = set()
     
     def _configure_dspy(self):
         """Configure DSPy to use the LLM manager."""
@@ -238,6 +240,11 @@ class ESIAExtractor:
         """
         Extract facts from a text chunk for a specific domain.
         """
+        # Check cache first (Phase 1 optimization)
+        cache_key = hash((context, domain))
+        if cache_key in self.empty_result_cache:
+            return {}  # Already know this returns no facts
+
         # Get signature dynamically
         signature_class = self._get_signature_class(domain)
         
@@ -287,7 +294,12 @@ class ESIAExtractor:
                     continue
                 
                 facts[field_name] = value
-        
+
+        # Add to cache if empty (Phase 1 optimization)
+        if not facts:
+            cache_key = hash((context, domain))
+            self.empty_result_cache.add(cache_key)
+
         return facts
     
     def extract_all_domains(self, context: str):

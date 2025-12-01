@@ -56,6 +56,7 @@ STORE_NAME_PREFIX = "esia_store_"
 
 # API Rate Limiting Configuration
 # For Tier 1 Gemini: Higher quota, but retry logic still needed for edge cases
+# Phase 1 optimization: Reduced delays as Gemini API typically recovers in 3-5 seconds
 MAX_RETRIES = 3  # Reduced from 4 since Tier 1 has better quotas
-INITIAL_RETRY_DELAY = 30  # seconds (reduced from 45)
-RETRY_BACKOFF_MULTIPLIER = 1.5  # 30s -> 45s -> 67.5s delays
+INITIAL_RETRY_DELAY = 5  # seconds (reduced from 30 - Gemini recovers quickly)
+RETRY_BACKOFF_MULTIPLIER = 2.0  # 5s -> 10s -> 20s delays (total: 35s vs previous 142.5s)
