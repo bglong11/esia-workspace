@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESIA Fact Extractor</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 ESIA Fact Extractor</h1>
+            <p class="subtitle">Automatically extract and organize facts from your PDF documents</p>
+        </header>
+
+        <!-- Upload Section -->
+        <div id="uploadSection" class="section">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📄</div>
+                <h3>Drop your PDF here or click to browse</h3>
+                <p>Supported formats: PDF, Markdown (.md)</p>
+                <input type="file" id="fileInput" accept=".pdf,.md" hidden>
+                <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                    Choose File
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div id="progressSection" class="section" style="display: none;">
+            <h3>Processing Document...</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p class="progress-text" id="progressText">Uploading...</p>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="section" style="display: none;">
+            <div class="results-header">
+                <h2>Extracted Facts</h2>
+                <div class="results-actions">
+                    <span id="statsText" class="stats-text"></span>
+                    <button class="btn btn-secondary" onclick="exportCSV()">📥 Export CSV</button>
+                    <button class="btn btn-secondary" onclick="resetApp()">🔄 New Document</button>
+                </div>
+            </div>
+
+            <!-- Filter and Search -->
+            <div class="controls">
+                <input
+                    type="text"
+                    id="searchInput"
+                    class="search-input"
+                    placeholder="Search facts..."
+                    onkeyup="filterFacts()"
+                >
+                <label class="checkbox-label">
+                    <input type="checkbox" id="conflictsOnly" onchange="filterFacts()">
+                    Show conflicts only
+                </label>
+            </div>
+
+            <!-- Facts Table -->
+            <div class="table-container">
+                <table id="factsTable">
+                    <thead>
+                        <tr>
+                            <th>Fact Name</th>
+                            <th>Value</th>
+                            <th>Unit</th>
+                            <th>Page</th>
+                            <th>Occurrences</th>
+                            <th>Conflict</th>
+                            <th>Comment/Evidence</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="factsTableBody">
+                        <!-- Facts will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Error Section -->
+        <div id="errorSection" class="section error" style="display: none;">
+            <h3>❌ Error</h3>
+            <p id="errorText"></p>
+            <button class="btn btn-secondary" onclick="resetApp()">Try Again</button>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Fact</h3>
+                <span class="close" onclick="closeEditModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Fact Name</label>
+                    <input type="text" id="editName" class="form-control" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Value</label>
+                    <input type="number" id="editValue" class="form-control" step="any">
+                </div>
+                <div class="form-group">
+                    <label>Unit</label>
+                    <input type="text" id="editUnit" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Comment</label>
+                    <textarea id="editComment" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveFact()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

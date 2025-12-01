@@ -1,0 +1,81 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+ENV/
+.env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyCharm
+.idea/
+
+# Output directories
+output/
+output_*/
+*.csv
+
+# Checkpoints
+.checkpoint.pkl
+*.checkpoint
+
+# DSPy cache
+.dspy_cache/
+__pycache__/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Sensitive data
+*.env
+.env.local
+config.local.json
+
+# Test data (keep sample_esia.md but ignore large test files)
+TL_IPP_ESIA.md
+TL_IPP_ESIA_Copy.md
+*_ESIA.md
+!sample_esia.md
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# API keys (if any get added)
+*_key.txt
+secrets/

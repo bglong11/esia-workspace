@@ -1,0 +1,8 @@
+docling
+dspy
+pandas
+tqdm
+python-dotenv
+onnxruntime
+rapidocr
+easyocr

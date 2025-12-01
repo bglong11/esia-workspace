@@ -1,0 +1,8 @@
+================================================================================
+LLM EXTRACTION DEBUG TEST
+================================================================================
+
+Input file: skill-package/bin/sample_esia.md
+Output also saved to: llm_debug_output.txt
+
+❌ File not found: skill-package/bin/sample_esia.md

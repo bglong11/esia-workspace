@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESIA Review Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-card-hover: #1a1a25;
+            --accent-teal: #2dd4bf;
+            --accent-coral: #fb7185;
+            --accent-amber: #fbbf24;
+            --accent-violet: #a78bfa;
+            --accent-blue: #38bdf8;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-subtle: rgba(255,255,255,0.08);
+            --gradient-hero: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16162a 100%);
+            --glow-teal: 0 0 40px rgba(45,212,191,0.15);
+            --glow-coral: 0 0 40px rgba(251,113,133,0.15);
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        /* Animated gradient background */
+        .bg-mesh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-hero);
+            z-index: -1;
+        }
+        
+        .bg-mesh::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(ellipse 80% 50% at 20% 40%, rgba(45,212,191,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 40% at 80% 60%, rgba(251,113,133,0.06) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px 32px;
+            position: relative;
+        }
+        
+        /* Header */
+        header {
+            margin-bottom: 48px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        
+        h1 {
+            font-family: 'Instrument Serif', serif;
+            font-size: 3.5rem;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-teal) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .doc-meta {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            background: var(--bg-card);
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+        }
+        
+        .doc-meta span {
+            color: var(--text-secondary);
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            margin-bottom: 48px;
+        }
+        
+        @media (max-width: 1200px) {
+            .stats-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            h1 { font-size: 2.5rem; }
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-2px);
+            border-color: rgba(255,255,255,0.12);
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+        
+        .stat-card.teal::before { background: var(--accent-teal); box-shadow: var(--glow-teal); }
+        .stat-card.coral::before { background: var(--accent-coral); box-shadow: var(--glow-coral); }
+        .stat-card.amber::before { background: var(--accent-amber); }
+        .stat-card.violet::before { background: var(--accent-violet); }
+        .stat-card.blue::before { background: var(--accent-blue); }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+        
+        .stat-value {
+            font-family: 'Space Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        
+        .stat-card.teal .stat-value { color: var(--accent-teal); }
+        .stat-card.coral .stat-value { color: var(--accent-coral); }
+        .stat-card.amber .stat-value { color: var(--accent-amber); }
+        .stat-card.violet .stat-value { color: var(--accent-violet); }
+        .stat-card.blue .stat-value { color: var(--accent-blue); }
+        
+        .stat-sublabel {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Section */
+        .section {
+            margin-bottom: 48px;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        h2 {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.75rem;
+            font-weight: 400;
+            color: var(--text-primary);
+        }
+        
+        .section-badge {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+        }
+        
+        /* Tables */
+        .table-wrapper {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: rgba(0,0,0,0.3);
+        }
+        
+        th {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            text-align: left;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        
+        td {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+        
+        /* Status Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .badge-high, .badge-exceedance, .badge-missing {
+            background: rgba(251,113,133,0.15);
+            color: var(--accent-coral);
+            border: 1px solid rgba(251,113,133,0.3);
+        }
+        
+        .badge-medium, .badge-approaching {
+            background: rgba(251,191,36,0.15);
+            color: var(--accent-amber);
+            border: 1px solid rgba(251,191,36,0.3);
+        }
+        
+        .badge-low, .badge-compliant, .badge-present {
+            background: rgba(45,212,191,0.15);
+            color: var(--accent-teal);
+            border: 1px solid rgba(45,212,191,0.3);
+        }
+        
+        .badge-info {
+            background: rgba(167,139,250,0.15);
+            color: var(--accent-violet);
+            border: 1px solid rgba(167,139,250,0.3);
+        }
+        
+        /* Progress bars */
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .progress-bar {
+            flex: 1;
+            height: 6px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-fill.teal { background: var(--accent-teal); }
+        .progress-fill.coral { background: var(--accent-coral); }
+        .progress-fill.amber { background: var(--accent-amber); }
+        
+        .progress-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            min-width: 45px;
+            text-align: right;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 48px;
+            color: var(--text-muted);
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        /* Tabs */
+        .tab-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 8px;
+        }
+        
+        .tab-btn {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .tab-btn:hover {
+            color: var(--text-secondary);
+            background: var(--bg-card);
+        }
+        
+        .tab-btn.active {
+            background: var(--bg-card);
+            border-color: var(--border-subtle);
+            color: var(--accent-teal);
+        }
+        
+        .tab-panel {
+            display: none;
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        /* Unit standardization cards */
+        .unit-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        
+        .unit-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 24px;
+            border-left: 4px solid var(--accent-amber);
+        }
+        
+        .unit-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        
+        .unit-card-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        
+        .unit-card-units {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--accent-amber);
+        }
+        
+        .unit-examples {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-subtle);
+        }
+        
+        .unit-example {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 0.85rem;
+        }
+        
+        .unit-example-value {
+            font-family: 'Space Mono', monospace;
+            color: var(--text-primary);
+        }
+        
+        .unit-example-page {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+        
+        .unit-recommendation {
+            margin-top: 16px;
+            padding: 12px;
+            background: rgba(45,212,191,0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(45,212,191,0.2);
+        }
+        
+        .unit-recommendation-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-teal);
+            margin-bottom: 4px;
+        }
+        
+        .unit-recommendation-value {
+            font-family: 'Space Mono', monospace;
+            color: var(--text-primary);
+        }
+        
+        /* Collapsible Sections */
+        .collapsible-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        
+        .collapsible-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .collapsible-header:hover {
+            background: rgba(255,255,255,0.02);
+        }
+        
+        .collapsible-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .collapsible-icon {
+            font-size: 1.3rem;
+        }
+        
+        .collapsible-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .coverage-pill {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            padding: 6px 14px;
+            border-radius: 20px;
+        }
+        
+        .coverage-pill.teal {
+            background: rgba(45,212,191,0.15);
+            color: var(--accent-teal);
+        }
+        
+        .coverage-pill.coral {
+            background: rgba(251,113,133,0.15);
+            color: var(--accent-coral);
+        }
+        
+        .coverage-pill.amber {
+            background: rgba(251,191,36,0.15);
+            color: var(--accent-amber);
+        }
+        
+        .chevron {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            transition: transform 0.3s ease;
+        }
+        
+        .collapsible-header.collapsed .chevron {
+            transform: rotate(-90deg);
+        }
+        
+        .collapsible-content {
+            border-top: 1px solid var(--border-subtle);
+            max-height: 2000px;
+            overflow: hidden;
+            transition: max-height 0.4s ease, opacity 0.3s ease;
+        }
+        
+        .collapsible-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+            border-top: none;
+        }
+        
+        .collapsible-content table {
+            border-radius: 0;
+        }
+        
+        .content-cell {
+            padding: 12px 20px !important;
+        }
+        
+        .content-item {
+            padding: 8px 12px;
+            margin: 4px 0;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+        
+        .content-item:first-child {
+            margin-top: 0;
+        }
+        
+        .content-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .page-ref {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent-teal);
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+        
+        .no-content {
+            color: var(--text-muted);
+            font-style: italic;
+            font-size: 0.85rem;
+        }
+        
+        /* Footer */
+        footer {
+            margin-top: 64px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border-subtle);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        footer a {
+            color: var(--accent-teal);
+            text-decoration: none;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-subtle);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-in {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+        
+        .delay-1 { animation-delay: 0.1s; opacity: 0; }
+        .delay-2 { animation-delay: 0.2s; opacity: 0; }
+        .delay-3 { animation-delay: 0.3s; opacity: 0; }
+        .delay-4 { animation-delay: 0.4s; opacity: 0; }
+        .delay-5 { animation-delay: 0.5s; opacity: 0; }
+    </style>
+</head>
+<body>
+    <div class="bg-mesh"></div>
+    
+    <div class="container">
+        <header class="animate-in">
+            <div class="header-top">
+                <h1>ESIA Review</h1>
+                <div class="doc-meta">
+                    <span>Document:</span> ESIA_Report_Final_Elang AMNT.pdf<br>
+                    <span>Pages:</span> 458 · 
+                    <span>Analyzed:</span> 2025-11-27
+                </div>
+            </div>
+        </header>
+        
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card teal animate-in delay-1">
+                <div class="stat-label">Chunks Analyzed</div>
+                <div class="stat-value">528</div>
+                <div class="stat-sublabel">text segments processed</div>
+            </div>
+            <div class="stat-card coral animate-in delay-2">
+                <div class="stat-label">Consistency Issues</div>
+                <div class="stat-value">11</div>
+                <div class="stat-sublabel">11 high severity</div>
+            </div>
+            <div class="stat-card amber animate-in delay-3">
+                <div class="stat-label">Unit Variations</div>
+                <div class="stat-value">4</div>
+                <div class="stat-sublabel">parameters with mixed units</div>
+            </div>
+            <div class="stat-card coral animate-in delay-4">
+                <div class="stat-label">Threshold Issues</div>
+                <div class="stat-value">46</div>
+                <div class="stat-sublabel">of 48 checks</div>
+            </div>
+            <div class="stat-card coral animate-in delay-5">
+                <div class="stat-label">Content Gaps</div>
+                <div class="stat-value">3</div>
+                <div class="stat-sublabel">of 31 expected</div>
+            </div>
+        </div>
+        
+        <!-- Consistency Issues Section -->
+        <div class="section animate-in">
+            <div class="section-header">
+                <h2>Consistency Issues</h2>
+                <span class="section-badge">Like-for-Like Comparison</span>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Severity</th>
+                            <th>Parameter Context</th>
+                            <th>Values Found</th>
+                            <th>Normalized</th>
+                            <th>Difference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <tr>
+                            <td><span class="badge badge-high">HIGH</span></td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Emissions Ghg</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem;">75.0 Mt [p.41]<br>584616.0 tonnes [p.123]<br>2698183.0 tonnes [p.127]</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text-muted);">[75000000.0, 584616.0, 2698183.0] t</td>
+                            <td><span class="badge badge-high">93299999900.0%</span></td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="badge badge-high">HIGH</span></td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Disturbance Area</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem;">784.0 ha [p.104]<br>2300.0 ha [p.276]<br>62.0 ha [p.314]</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text-muted);">[7840000.0, 23000000.0, 620000.0] sq m</td>
+                            <td><span class="badge badge-high">528635.6%</span></td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="badge badge-high">HIGH</span></td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Power Capacity</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem;">112.0 MW [p.111]<br>365.0 MW [p.111]<br>28.0 MW [p.111]</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text-muted);">[112.0, 365.0, 28.0] MW</td>
+                            <td><span class="badge badge-high">7200.0%</span></td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="badge badge-high">HIGH</span></td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Workforce</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem;">3000.0 people [p.114]<br>20.0 persons [p.354]</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text-muted);">[3000.0, 20.0] people</td>
+                            <td><span class="badge badge-high">14900.0%</span></td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="badge badge-high">HIGH</span></td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Rainfall</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem;">1869.0 mm [p.159]<br>18.0 mm [p.159]<br>352.0 mm [p.159]</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text-muted);">[1869.0, 18.0, 352.0] m</td>
+                            <td><span class="badge badge-high">10283.3%</span></td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="badge badge-high">HIGH</span></td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Study Area</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem;">157499.0 ha [p.172]<br>17146.0 ha [p.173]<br>40.8 hectares [p.207]</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text-muted);">[1574990000.0, 171460000.0, 408000.0] sq m</td>
+                            <td><span class="badge badge-high">385927.0%</span></td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="badge badge-high">HIGH</span></td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Population</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem;">3694.0 people [p.241]<br>1.577 people [p.250]<br>70.0 people [p.250]</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text-muted);">[3694.0, 1.58, 70.0] people</td>
+                            <td><span class="badge badge-high">15521204.3%</span></td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="badge badge-high">HIGH</span></td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Concession Area</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem;">62.0 ha [p.314]<br>115.0 ha [p.314]<br>8.0 ha [p.314]</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text-muted);">[620000.0, 1150000.0, 80000.0] sq m</td>
+                            <td><span class="badge badge-high">28937.0%</span></td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="badge badge-high">HIGH</span></td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Noise Level</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem;">84.0 dBA [p.319]<br>86.0 dBA [p.319]<br>120.0 dBA [p.319]</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text-muted);">[84.0, 86.0, 120.0] dBA</td>
+                            <td><span class="badge badge-high">71.4%</span></td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="badge badge-high">HIGH</span></td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Water Consumption</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem;">25000.0 ML [p.323]<br>6424.0 ML [p.323]<br>17.6 ML [p.323]</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text-muted);">[25000000000.0, 6424000000.0, 17600000.0] L</td>
+                            <td><span class="badge badge-high">277677.8%</span></td>
+                        </tr>
+
+                        <tr>
+                            <td><span class="badge badge-high">HIGH</span></td>
+                            <td style="color: var(--text-primary); font-weight: 500;">Workforce</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem;">3000.0 person [p.351]<br>3000.0 person [p.358]<br>3000.0 person [p.363]</td>
+                            <td style="font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text-muted);">[3000.0, 3000.0, 3000.0] person</td>
+                            <td><span class="badge badge-high">300.0%</span></td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+        
+        <!-- Unit Standardization Section (NEW) -->
+        <div class="section animate-in">
+            <div class="section-header">
+                <h2>Unit Standardization</h2>
+                <span class="section-badge">Mixed Units Detected</span>
+            </div>
+
+            <div class="unit-cards">
+
+                <div class="unit-card">
+                    <div class="unit-card-header">
+                        <div>
+                            <div class="unit-card-title">Emissions Ghg</div>
+                            <div class="unit-card-units">mt, tonne, tonnes</div>
+                        </div>
+                        <span class="badge badge-info">3 units</span>
+                    </div>
+                    <div class="unit-examples">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.1em;">Examples Found</div>
+
+                        <div class="unit-example">
+                            <span class="unit-example-value">75.0 Mt</span>
+                            <span class="unit-example-page">Page 41</span>
+                        </div>
+
+                        <div class="unit-example">
+                            <span class="unit-example-value">1.0 tonne</span>
+                            <span class="unit-example-page">Page 391</span>
+                        </div>
+
+                        <div class="unit-example">
+                            <span class="unit-example-value">584616.0 tonnes</span>
+                            <span class="unit-example-page">Page 123</span>
+                        </div>
+
+                    </div>
+                    <div class="unit-recommendation">
+                        <div class="unit-recommendation-label">Recommended Standard</div>
+                        <div class="unit-recommendation-value">Convert all to t</div>
+                    </div>
+                </div>
+
+                <div class="unit-card">
+                    <div class="unit-card-header">
+                        <div>
+                            <div class="unit-card-title">Disturbance Area</div>
+                            <div class="unit-card-units">ha, m2</div>
+                        </div>
+                        <span class="badge badge-info">2 units</span>
+                    </div>
+                    <div class="unit-examples">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.1em;">Examples Found</div>
+
+                        <div class="unit-example">
+                            <span class="unit-example-value">784.0 ha</span>
+                            <span class="unit-example-page">Page 104</span>
+                        </div>
+
+                        <div class="unit-example">
+                            <span class="unit-example-value">4350.0 m2</span>
+                            <span class="unit-example-page">Page 439</span>
+                        </div>
+
+                    </div>
+                    <div class="unit-recommendation">
+                        <div class="unit-recommendation-label">Recommended Standard</div>
+                        <div class="unit-recommendation-value">Convert all to sq m</div>
+                    </div>
+                </div>
+
+                <div class="unit-card">
+                    <div class="unit-card-header">
+                        <div>
+                            <div class="unit-card-title">Workforce</div>
+                            <div class="unit-card-units">people, persons</div>
+                        </div>
+                        <span class="badge badge-info">2 units</span>
+                    </div>
+                    <div class="unit-examples">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.1em;">Examples Found</div>
+
+                        <div class="unit-example">
+                            <span class="unit-example-value">3000.0 people</span>
+                            <span class="unit-example-page">Page 114</span>
+                        </div>
+
+                        <div class="unit-example">
+                            <span class="unit-example-value">20.0 persons</span>
+                            <span class="unit-example-page">Page 354</span>
+                        </div>
+
+                    </div>
+                    <div class="unit-recommendation">
+                        <div class="unit-recommendation-label">Recommended Standard</div>
+                        <div class="unit-recommendation-value">Convert all to people</div>
+                    </div>
+                </div>
+
+                <div class="unit-card">
+                    <div class="unit-card-header">
+                        <div>
+                            <div class="unit-card-title">Study Area</div>
+                            <div class="unit-card-units">hectares, ha</div>
+                        </div>
+                        <span class="badge badge-info">2 units</span>
+                    </div>
+                    <div class="unit-examples">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.1em;">Examples Found</div>
+
+                        <div class="unit-example">
+                            <span class="unit-example-value">40.8 hectares</span>
+                            <span class="unit-example-page">Page 207</span>
+                        </div>
+
+                        <div class="unit-example">
+                            <span class="unit-example-value">157499.0 ha</span>
+                            <span class="unit-example-page">Page 172</span>
+                        </div>
+
+                    </div>
+                    <div class="unit-recommendation">
+                        <div class="unit-recommendation-label">Recommended Standard</div>
+                        <div class="unit-recommendation-value">Convert all to sq m</div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+        
+        <!-- Threshold Compliance Section -->
+        <div class="section animate-in">
+            <div class="section-header">
+                <h2>IFC Threshold Compliance</h2>
+                <span class="section-badge">EHS Guidelines</span>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Measured</th>
+                            <th>IFC Limit</th>
+                            <th>Status</th>
+                            <th>Page</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">55.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-approaching">APPROACHING</span></td>
+                            <td style="color: var(--text-muted);">164</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">55.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-approaching">APPROACHING</span></td>
+                            <td style="color: var(--text-muted);">164</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">pH</td>
+                            <td style="font-family: 'Space Mono', monospace;">2.0 -</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">None -</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">190</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">pH</td>
+                            <td style="font-family: 'Space Mono', monospace;">2.0 -</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">None -</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">190</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">pH</td>
+                            <td style="font-family: 'Space Mono', monospace;">2.0 -</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">None -</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">190</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">pH</td>
+                            <td style="font-family: 'Space Mono', monospace;">2.0 -</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">None -</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">190</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">pH</td>
+                            <td style="font-family: 'Space Mono', monospace;">2.0 -</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">None -</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">190</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">pH</td>
+                            <td style="font-family: 'Space Mono', monospace;">2.0 -</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">None -</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">190</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">pH</td>
+                            <td style="font-family: 'Space Mono', monospace;">2.0 -</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">None -</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">190</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">pH</td>
+                            <td style="font-family: 'Space Mono', monospace;">2.0 -</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">None -</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">190</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">pH</td>
+                            <td style="font-family: 'Space Mono', monospace;">2.0 -</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">None -</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">190</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">pH</td>
+                            <td style="font-family: 'Space Mono', monospace;">2.0 -</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">None -</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">190</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">pH</td>
+                            <td style="font-family: 'Space Mono', monospace;">2.0 -</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">None -</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">190</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">84.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">86.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">120.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">70.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">120.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">120.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">120.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">120.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">120.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">120.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">86.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">86.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">86.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">86.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">86.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">86.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">70.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">70.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">70.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">70.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">70.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">70.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">84.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">120.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">120.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">120.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">120.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">86.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">86.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">86.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">86.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">70.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">70.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">70.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">noise_level</td>
+                            <td style="font-family: 'Space Mono', monospace;">70.0 dB(A)</td>
+                            <td style="font-family: 'Space Mono', monospace; color: var(--text-muted);">55 dB(A)</td>
+                            <td><span class="badge badge-exceedance">EXCEEDANCE</span></td>
+                            <td style="color: var(--text-muted);">319</td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+        
+        <!-- Fact Categories Section -->
+        <div class="section animate-in">
+            <div class="section-header">
+                <h2>Content Coverage</h2>
+                <span class="section-badge">Taxonomy Categories</span>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Count</th>
+                            <th style="width: 50%;">Coverage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">PROJECT_DESCRIPTION</td>
+                            <td style="font-family: 'Space Mono', monospace;">375</td>
+                            <td>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill teal" style="width: 17.201834862385322%;"></div>
+                                    </div>
+                                    <span class="progress-label">17.2%</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">ENVIRONMENTAL_IMPACTS</td>
+                            <td style="font-family: 'Space Mono', monospace;">343</td>
+                            <td>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill teal" style="width: 15.73394495412844%;"></div>
+                                    </div>
+                                    <span class="progress-label">15.7%</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">MITIGATION</td>
+                            <td style="font-family: 'Space Mono', monospace;">256</td>
+                            <td>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill teal" style="width: 11.743119266055047%;"></div>
+                                    </div>
+                                    <span class="progress-label">11.7%</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">REGULATORY</td>
+                            <td style="font-family: 'Space Mono', monospace;">240</td>
+                            <td>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill teal" style="width: 11.009174311926607%;"></div>
+                                    </div>
+                                    <span class="progress-label">11.0%</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">PHYSICAL_BASELINE</td>
+                            <td style="font-family: 'Space Mono', monospace;">233</td>
+                            <td>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill teal" style="width: 10.688073394495413%;"></div>
+                                    </div>
+                                    <span class="progress-label">10.7%</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">SOCIAL_BASELINE</td>
+                            <td style="font-family: 'Space Mono', monospace;">205</td>
+                            <td>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill amber" style="width: 9.403669724770642%;"></div>
+                                    </div>
+                                    <span class="progress-label">9.4%</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">BIOLOGICAL_BASELINE</td>
+                            <td style="font-family: 'Space Mono', monospace;">175</td>
+                            <td>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill amber" style="width: 8.027522935779817%;"></div>
+                                    </div>
+                                    <span class="progress-label">8.0%</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">MONITORING</td>
+                            <td style="font-family: 'Space Mono', monospace;">143</td>
+                            <td>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill amber" style="width: 6.559633027522936%;"></div>
+                                    </div>
+                                    <span class="progress-label">6.6%</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">SOCIAL_IMPACTS</td>
+                            <td style="font-family: 'Space Mono', monospace;">133</td>
+                            <td>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill amber" style="width: 6.100917431192661%;"></div>
+                                    </div>
+                                    <span class="progress-label">6.1%</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">STAKEHOLDER_ENGAGEMENT</td>
+                            <td style="font-family: 'Space Mono', monospace;">66</td>
+                            <td>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill coral" style="width: 3.0275229357798166%;"></div>
+                                    </div>
+                                    <span class="progress-label">3.0%</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="color: var(--text-primary); font-weight: 500;">UNCATEGORIZED</td>
+                            <td style="font-family: 'Space Mono', monospace;">11</td>
+                            <td>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill coral" style="width: 0.5045871559633028%;"></div>
+                                    </div>
+                                    <span class="progress-label">0.5%</span>
+                                </div>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Gap Analysis Section -->
+        <div class="section animate-in">
+            <div class="section-header">
+                <h2>Gap Analysis</h2>
+                <span class="section-badge">Expected Content</span>
+            </div>
+
+            <div class="collapsible-section">
+                <button class="collapsible-header" onclick="toggleSection(this)">
+                    <div class="collapsible-title">
+                        <span class="collapsible-icon">📋</span>
+                        <span>Project Description</span>
+                    </div>
+                    <div class="collapsible-meta">
+                        <span class="coverage-pill amber">4/7 found</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </button>
+                <div class="collapsible-content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 20%;">Sub-section</th>
+                                <th style="width: 10%;">Status</th>
+                                <th style="width: 70%;">Content Found</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Location Coordinates</td>
+                                <td><span class="badge badge-missing">MISSING</span></td>
+                                <td class="content-cell"><span class="no-content">No content found</span></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Project Area</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">25,000  ha <span class="page-ref">[p.29]</span></div><div class="content-item">2,000 ha <span class="page-ref">[p.41]</span></div><div class="content-item">700 ha <span class="page-ref">[p.95]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Workforce Numbers</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">workforce of 750, <span class="page-ref">[p.104]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Water Consumption</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">water Consumption at Batu Hijau, 2017-2018 <span class="page-ref">[p.19]</span></div><div class="content-item">water  consumption  was  somewhat  greater  than  3 <span class="page-ref">[p.124]</span></div><div class="content-item">water consumption and seawater use for the Batu Hijau operation, respectively, in 2017 and 2018 <span class="page-ref">[p.137]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Power Consumption</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">power demand from the existing base of around 112 MW, to around 365 MW by 2025 <span class="page-ref">[p.111]</span></div><div class="content-item">energy demand of the current Batu Hijau mining operation is met by the existing 130 MW coal-fired power plant (CFPP) located at Benete Bay <span class="page-ref">[p.377]</span></div><div class="content-item">energy demand by the Elang project and AMIN copper smelter will be met by the existing Benete coal-fired power plant and an additional 300 MW coal-fir... <span class="page-ref">[p.379]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Project Duration</td>
+                                <td><span class="badge badge-missing">MISSING</span></td>
+                                <td class="content-cell"><span class="no-content">No content found</span></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Capital Cost</td>
+                                <td><span class="badge badge-missing">MISSING</span></td>
+                                <td class="content-cell"><span class="no-content">No content found</span></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="collapsible-section">
+                <button class="collapsible-header" onclick="toggleSection(this)">
+                    <div class="collapsible-title">
+                        <span class="collapsible-icon">🌍</span>
+                        <span>Physical Baseline</span>
+                    </div>
+                    <div class="collapsible-meta">
+                        <span class="coverage-pill teal">7/7 found</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </button>
+                <div class="collapsible-content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 20%;">Sub-section</th>
+                                <th style="width: 10%;">Status</th>
+                                <th style="width: 70%;">Content Found</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Ambient Air Quality</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">Ambient Air Quality Standards <span class="page-ref">[p.2]</span></div><div class="content-item">Ambient Air Quality Standards to Protect Environment <span class="page-ref">[p.13]</span></div><div class="content-item">Ambient Air Quality in Batu Hijau Project Area <span class="page-ref">[p.14]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Noise Measurements</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">Noise Level Standards (at 55 dB <span class="page-ref">[p.164]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Water Quality Data</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">Water Quality Measurements <span class="page-ref">[p.19]</span></div><div class="content-item">Water Quality Monitoring Locations within the Elang Project Area
+The primary data <span class="page-ref">[p.178]</span></div><div class="content-item">Water  quality  data <span class="page-ref">[p.178]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Rainfall Data</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">rainfall among the three stations was 1,869 mm <span class="page-ref">[p.159]</span></div><div class="content-item">rainfall from 2012-2017 was lowest in September (18 mm <span class="page-ref">[p.159]</span></div><div class="content-item">precipitation (&lt;1000 mm <span class="page-ref">[p.205]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Seismic Assessment</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">Earthquake  Hazard <span class="page-ref">[p.168]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Climate Data</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">humidity at WS-E1 in Elang project area tended to be high, ranging from 85% <span class="page-ref">[p.158]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Topography</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">slopes are summarized below:
+- â–ª Bench heights:
+15 to 30 m <span class="page-ref">[p.89]</span></div><div class="content-item">topography with elevations ranging between RL 300 and RL 500 m <span class="page-ref">[p.94]</span></div><div class="content-item">Elevations along route:
+RL 15m <span class="page-ref">[p.104]</span></div></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="collapsible-section">
+                <button class="collapsible-header" onclick="toggleSection(this)">
+                    <div class="collapsible-title">
+                        <span class="collapsible-icon">🌿</span>
+                        <span>Biological Baseline</span>
+                    </div>
+                    <div class="collapsible-meta">
+                        <span class="coverage-pill teal">5/5 found</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </button>
+                <div class="collapsible-content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 20%;">Sub-section</th>
+                                <th style="width: 10%;">Status</th>
+                                <th style="width: 70%;">Content Found</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Species Lists</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">flora  and  fauna <span class="page-ref">[p.36]</span></div><div class="content-item">flora and fauna <span class="page-ref">[p.203]</span></div><div class="content-item">species recorded <span class="page-ref">[p.207]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">IUCN Status</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">IUCN Red List of Threatened Species: The Javan Deer (IUCN rating = Vulnerable <span class="page-ref">[p.208]</span></div><div class="content-item">IUCN = IUCN Red List, LC = Least Concern, VU = Vulnerable, EN = Endangered <span class="page-ref">[p.210]</span></div><div class="content-item">IUCN = Endangered) and the Rainbow Lorikeet (IUCN = Vulnerable <span class="page-ref">[p.210]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Protected Areas</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">Protected Areas and Internationally Recognized Areas10-311 <span class="page-ref">[p.9]</span></div><div class="content-item">Protected Areas <span class="page-ref">[p.11]</span></div><div class="content-item">conservation areas and buffer zones, and requirements for activities to preserve and protect these items <span class="page-ref">[p.36]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Critical Habitat</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">Critical Habitat (CH) <span class="page-ref">[p.11]</span></div><div class="content-item">Critical Habitat (CH) Criterion of IFC PS 6 <span class="page-ref">[p.21]</span></div><div class="content-item">Critical Habitat Assessment Report
+Appendix 8
+Biodiversity Action Plan
+Appendix 9 Anthropological Reconnaissance Study
+Appendix 10 Chance Find Procedu... <span class="page-ref">[p.24]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Endemic Species</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">endemic species of Lesser Sunda (Table 7-19) <span class="page-ref">[p.214]</span></div></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="collapsible-section">
+                <button class="collapsible-header" onclick="toggleSection(this)">
+                    <div class="collapsible-title">
+                        <span class="collapsible-icon">👥</span>
+                        <span>Social Baseline</span>
+                    </div>
+                    <div class="collapsible-meta">
+                        <span class="coverage-pill teal">6/6 found</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </button>
+                <div class="collapsible-content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 20%;">Sub-section</th>
+                                <th style="width: 10%;">Status</th>
+                                <th style="width: 70%;">Content Found</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Population Data</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">population  and  agriculture  are  through:  (1 <span class="page-ref">[p.82]</span></div><div class="content-item">population density is Padasuka Village, Lunyuk District, at  147 <span class="page-ref">[p.241]</span></div><div class="content-item">population sizes, with 4,535 <span class="page-ref">[p.241]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Household Data</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">household (Table 7 <span class="page-ref">[p.243]</span></div><div class="content-item">households are farmers, while  36 <span class="page-ref">[p.254]</span></div><div class="content-item">household also spent a considerable amount (up to IDR 1,310,265 <span class="page-ref">[p.260]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Livelihood Sources</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">livelihoods and preserving their unique cultural identity, including ensure access to natural resource <span class="page-ref">[p.369]</span></div><div class="content-item">livelihoods and property could elevate the need for basic services and restoration of economic activity <span class="page-ref">[p.403]</span></div><div class="content-item">livelihood of the Talonang Adat Community is farming <span class="page-ref">[p.428]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Vulnerable Groups</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">Vulnerable Groups <span class="page-ref">[p.7]</span></div><div class="content-item">Vulnerable groups are made up of people who experience higher risks of impoverishment and social  exclusion  compared  to  the  general  population <span class="page-ref">[p.250]</span></div><div class="content-item">vulnerable  groups  is  normally  held  to accommodate  the  special  needs  of  these  groups  and  to  hear  their  questions,  concerns, opinions, ... <span class="page-ref">[p.250]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Land Tenure</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">customary lands (Pekasa) â–ª Lengthy land recognition disputes, competing claims â–ª Need for Free Prior Informed Consent (FPIC) <span class="page-ref">[p.41]</span></div><div class="content-item">customary lands of the Pekasa and Talonang is situated near the proposed OLC corridor <span class="page-ref">[p.369]</span></div><div class="content-item">land ownership and uses <span class="page-ref">[p.426]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Indigenous Peoples</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">Indigenous People <span class="page-ref">[p.9]</span></div><div class="content-item">Indigenous People Standard, Concerning = Guidance for engagement with indigenous people <span class="page-ref">[p.51]</span></div><div class="content-item">Indigenous  Peoples -  social  group <span class="page-ref">[p.250]</span></div></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="collapsible-section">
+                <button class="collapsible-header" onclick="toggleSection(this)">
+                    <div class="collapsible-title">
+                        <span class="collapsible-icon">⚡</span>
+                        <span>Impact Assessment</span>
+                    </div>
+                    <div class="collapsible-meta">
+                        <span class="coverage-pill teal">3/3 found</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </button>
+                <div class="collapsible-content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 20%;">Sub-section</th>
+                                <th style="width: 10%;">Status</th>
+                                <th style="width: 70%;">Content Found</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Significance Criteria</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">Impact Assessment Elang Project Indonesia
+PT Amman Mineral Nusa Tenggara PROJECT NUMBER #2019-03-05-01 <span class="page-ref">[p.1]</span></div><div class="content-item">Impact Assessment and Management Plan Overview <span class="page-ref">[p.2]</span></div><div class="content-item">IMPACT ASSESSMENT <span class="page-ref">[p.9]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Cumulative Impacts</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">Cumulative Impact Assessment <span class="page-ref">[p.9]</span></div><div class="content-item">Cumulative Impacts of Gaseous Emissions in Benete Bay and Its Surrounds <span class="page-ref">[p.16]</span></div><div class="content-item">cumulative impacts from transportation, supply chain and other aspects of the Elang project (defined as Area of Influence or AOI) <span class="page-ref">[p.39]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Transboundary Impacts</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">TRANSBOUNDARY IMPACT ASSESSMENT <span class="page-ref">[p.9]</span></div><div class="content-item">Transboundary Impacts due to Elang Block to Timor Leste <span class="page-ref">[p.16]</span></div><div class="content-item">Transboundary Impact Assessment elaborates on cumulative impacts that result from the incremental impact, on areas or resources used or directly impac... <span class="page-ref">[p.46]</span></div></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="collapsible-section">
+                <button class="collapsible-header" onclick="toggleSection(this)">
+                    <div class="collapsible-title">
+                        <span class="collapsible-icon">🛡️</span>
+                        <span>Mitigation & Management</span>
+                    </div>
+                    <div class="collapsible-meta">
+                        <span class="coverage-pill teal">3/3 found</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </button>
+                <div class="collapsible-content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 20%;">Sub-section</th>
+                                <th style="width: 10%;">Status</th>
+                                <th style="width: 70%;">Content Found</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">ESMP Reference</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">Environmental and Social Management Plan during Construction <span class="page-ref">[p.2]</span></div><div class="content-item">Environmental  and  Social  Management  Plans,  Standard Operating  Procedures  (SOPs),  Work  Instructions  (WIs)  and  Job  Safety  Analysis  (JSAs)... <span class="page-ref">[p.48]</span></div><div class="content-item">ESMP RESPONSE * : <span class="page-ref">[p.340]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Monitoring Plan</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">Monitoring Plan <span class="page-ref">[p.25]</span></div><div class="content-item">Monitoring  Plan  ( Rencana Pengelolaan/Pemantauan Lingkungan -RKL/RPL) <span class="page-ref">[p.36]</span></div><div class="content-item">monitoring program is overseen by appropriate level in the organization, such as the Chief Mine Engineer ( Kepala Teknik Tambang or KTT) who is the to... <span class="page-ref">[p.60]</span></div></td>
+                            </tr>
+
+                            <tr>
+                                <td style="font-weight: 500; color: var(--text-primary);">Emergency Response</td>
+                                <td><span class="badge badge-present">PRESENT</span></td>
+                                <td class="content-cell"><div class="content-item">Emergency Response Plan Procedures; â–ª Conduct annual Side Wide Risk Register ( Identifikasi Bahaya dan Penilaian Resiko or IBPR) and follow up prior... <span class="page-ref">[p.53]</span></div><div class="content-item">Emergency Response Plan Mine Water Management, 1 = CDC-MWM-011-P100 <span class="page-ref">[p.59]</span></div><div class="content-item">Emergency Response Plan Mine Water Management, 2 = Guidance in managing emergencies related to mine water management <span class="page-ref">[p.59]</span></div></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+        
+        <footer>
+            <p>ESIA Reviewer v2.0 · Context-Aware Consistency Checking · Unit Standardization Analysis</p>
+            <p style="margin-top: 8px;">Reference: <a href="https://www.ifc.org/en/insights-reports/2007/ehs-guidelines">IFC EHS Guidelines</a></p>
+        </footer>
+    </div>
+    
+    <script>
+        function toggleSection(header) {
+            header.classList.toggle('collapsed');
+            const content = header.nextElementSibling;
+            content.classList.toggle('collapsed');
+        }
+        
+        // Start all sections expanded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Optional: collapse all by default
+            // document.querySelectorAll('.collapsible-header').forEach(h => {
+            //     h.classList.add('collapsed');
+            //     h.nextElementSibling.classList.add('collapsed');
+            // });
+        });
+    </script>
+</body>
+</html>

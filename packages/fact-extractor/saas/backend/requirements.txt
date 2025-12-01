@@ -1,0 +1,27 @@
+# FastAPI and server
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# Database
+sqlalchemy==2.0.25
+alembic==1.13.1
+
+# Async processing
+celery==5.3.6
+redis==5.0.1
+
+# Document processing with Docling (CPU mode)
+docling>=1.0.0
+
+# PDF processing (fallback)
+pdfplumber==0.10.3
+
+# Core extraction dependencies
+dspy-ai==2.4.0
+pandas==2.1.4
+tqdm==4.66.1
+
+# Utilities
+python-dotenv==1.0.0
+aiofiles==23.2.1
