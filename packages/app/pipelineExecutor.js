@@ -49,14 +49,15 @@ function executeStep(step, pdfFilename, sanitizedName, uploadedFilePath, executi
       }
 
       // Prepare arguments
-      const args = getStepArgs(step, uploadedFilePath, sanitizedName);
+      const args = getStepArgs(step, uploadedFilePath, sanitizedName, outputDir);
 
       console.log(`[Pipeline] Running: ${pipelineConfig.pythonExecutable} ${scriptPath} ${args.join(' ')}`);
 
-      // Spawn the Python process
+      // Spawn the Python process with shell on Windows for better compatibility
       const child = spawn(pipelineConfig.pythonExecutable, ['-u', scriptPath, ...args], {
-        cwd: pipelineConfig.workingDir,
+        cwd: path.dirname(scriptPath), // Use script directory as working directory
         timeout: step.timeout,
+        shell: process.platform === 'win32', // Use shell on Windows for better process spawning
         env: {
           ...process.env,
           // Force UTF-8 encoding for Python to handle Unicode characters

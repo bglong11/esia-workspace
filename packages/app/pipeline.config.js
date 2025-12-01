@@ -67,15 +67,22 @@ export const pipelineConfig = {
  * Gets the script arguments for a pipeline step
  * Replaces placeholders with actual values
  */
-export function getStepArgs(step, pdfFilename, sanitizedName) {
+export function getStepArgs(step, pdfFilename, sanitizedName, outputDir) {
   const rootName = sanitizedName.replace(/\.[^/.]+$/, ''); // Remove extension
 
-  return step.args.map(arg =>
-    arg
+  return step.args.map(arg => {
+    let processedArg = arg
       .replace('{PDF_FILE}', pdfFilename)
       .replace('{SANITIZED_NAME}', sanitizedName)
-      .replace('{ROOT_NAME}', rootName)
-  );
+      .replace('{ROOT_NAME}', rootName);
+
+    // Convert relative paths to absolute (those starting with ../)
+    if (processedArg.startsWith('../')) {
+      processedArg = path.resolve(path.join(pipelineConfig.workingDir, processedArg));
+    }
+
+    return processedArg;
+  });
 }
 
 /**
