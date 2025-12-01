@@ -754,6 +754,7 @@ def process_document(
     try:
         # PHASE 1: Extract chunks and write original JSONL only
         # Translation (if enabled) happens in Phase 2 after this file is complete
+        total_pages = len(doc.pages)
         with open(jsonl_path, 'w', encoding='utf-8') as f:
             chunk_gen = extract_chunks_with_pages(doc, chunker, tokenizer, config.verbose)
 
@@ -777,6 +778,11 @@ def process_document(
                 chunk_stats['min_tokens'] = min(chunk_stats['min_tokens'], chunk_original.token_count)
                 chunk_stats['max_tokens'] = max(chunk_stats['max_tokens'], chunk_original.token_count)
                 chunk_stats['pages'].add(chunk_original.page)
+
+                # Progress tracking for frontend - output format that pipelineExecutor.js can parse
+                # Pattern: "Page X of Y" (matches pipelineExecutor.js pattern 2)
+                if chunk_stats['count'] % 10 == 0:  # Update every 10 chunks
+                    print(f"[PROGRESS] Page {chunk_original.page} of {total_pages}", flush=True)
 
         if chunk_stats['count'] == 0:
             chunk_stats['min_tokens'] = 0
