@@ -39,7 +39,7 @@ export const pipelineConfig = {
       description: 'Extracting domain-specific facts using archetype-based mapping...',
       script: 'step3_extraction_with_archetypes.py',
       args: ['--chunks', '../data/outputs/{PDF_ROOT}_chunks.jsonl', '--output', '../data/outputs/{PDF_ROOT}_facts.json'],
-      timeout: 900000, // 15 minutes for extraction
+      timeout: 14400000, // 4 hours for extraction (large documents with LLM calls)
     },
     {
       id: 'step3_analysis',
