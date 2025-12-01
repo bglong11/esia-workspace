@@ -59,7 +59,8 @@ export const pipelineConfig = {
   metadataDir: './data/output/metadata',
 
   // Python executable (customize if needed)
-  pythonExecutable: 'python',
+  // Using Python 3.12 from venv312
+  pythonExecutable: path.resolve('../pipeline/venv312/Scripts/python.exe'),
   // pythonExecutable: 'python3',  // Use this on Linux/Mac
 };
 

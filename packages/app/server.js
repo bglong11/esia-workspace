@@ -134,6 +134,77 @@ app.get('/api/pipeline', (req, res) => {
   res.json({ executions });
 });
 
+// Download results endpoint - creates a zip file with all pipeline outputs
+app.get('/api/download/:executionId', async (req, res) => {
+  const execution = getPipelineStatus(req.params.executionId);
+  if (!execution) {
+    return res.status(404).json({ message: 'Execution not found' });
+  }
+
+  if (execution.status !== 'completed') {
+    return res.status(400).json({ message: 'Pipeline not yet completed' });
+  }
+
+  try {
+    // Dynamically import archiver
+    const archiver = (await import('archiver')).default;
+
+    // Set up response headers for zip download
+    const zipFilename = `${execution.sanitizedName}_results.zip`;
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="${zipFilename}"`);
+
+    // Create archiver instance
+    const archive = archiver('zip', {
+      zlib: { level: 9 } // Maximum compression
+    });
+
+    // Handle archiver errors
+    archive.on('error', (err) => {
+      console.error('[Download] Archiver error:', err);
+      res.status(500).json({ message: 'Error creating zip file', error: err.message });
+    });
+
+    // Pipe archive to response
+    archive.pipe(res);
+
+    // Define output directory (from pipeline config)
+    const outputDir = path.resolve(__dirname, '../pipeline/data/outputs');
+
+    // Add all output files for this execution
+    const baseFilename = execution.pdfFilename.replace(/\.[^/.]+$/, ''); // Remove extension
+
+    // List of expected output files
+    const outputFiles = [
+      `${baseFilename}_chunks.jsonl`,
+      `${baseFilename}_meta.json`,
+      `${baseFilename}_facts.json`,
+      `${baseFilename}_review.html`,
+      `${baseFilename}_review.xlsx`,
+    ];
+
+    // Add each file if it exists
+    for (const filename of outputFiles) {
+      const filePath = path.join(outputDir, filename);
+      if (fs.existsSync(filePath)) {
+        archive.file(filePath, { name: filename });
+        console.log(`[Download] Added to zip: ${filename}`);
+      } else {
+        console.warn(`[Download] File not found: ${filePath}`);
+      }
+    }
+
+    // Finalize the archive
+    await archive.finalize();
+    console.log(`[Download] Zip file sent: ${zipFilename}`);
+  } catch (error) {
+    console.error('[Download] Error:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Error generating download', error: error.message });
+    }
+  }
+});
+
 // Serve static files from data/pdf (optional - to access uploaded files)
 app.use('/data/pdf', express.static(uploadsDir));
 

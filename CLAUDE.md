@@ -73,6 +73,44 @@ When working on this workspace:
 4. **Installation?** See `packages/pipeline/REQUIREMENTS_GUIDE.md`
 5. **Architecture?** See `packages/pipeline/DIRECTORY_STRUCTURE.md`
 
+### ⚠️ CRITICAL: Python Environment Configuration ⚠️
+
+**MANDATORY REQUIREMENT - READ THIS EVERY TIME:**
+
+**Python 3.12 from venv312 MUST BE ACTIVATED/CHECKED EVERY TIME PYTHON IS RUN**
+
+**BEFORE running ANY Python command:**
+1. ✅ **ALWAYS verify** you're using `packages/pipeline/venv312/Scripts/python.exe`
+2. ✅ **ALWAYS check** the pipeline.config.js uses the correct path
+3. ✅ **NEVER use** system Python or any other Python installation
+4. ✅ **ALWAYS test** the Python version before running pipeline commands
+
+**Required Configuration:**
+- **Location:** `packages/pipeline/venv312/`
+- **Python Version:** Python 3.12 (ONLY)
+- **Python Executable:** `packages/pipeline/venv312/Scripts/python.exe`
+- **Configuration File:** `packages/app/pipeline.config.js`
+
+**The pipeline.config.js MUST ALWAYS specify:**
+
+```javascript
+pythonExecutable: path.resolve('../pipeline/venv312/Scripts/python.exe')
+```
+
+**Verification Command (run this BEFORE executing pipeline):**
+
+```bash
+cd packages/pipeline
+venv312/Scripts/python.exe --version  # Should output: Python 3.12.x
+```
+
+**Why This Matters:**
+- The venv312 environment contains ALL required dependencies
+- PyTorch with CUDA support (for GPU acceleration)
+- torchvision (v0.20.1+cu121)
+- Docling and all pipeline-specific packages
+- System Python is missing these dependencies and WILL FAIL
+
 ---
 
 ## Workspace Structure
