@@ -17,6 +17,15 @@ This file provides guidance to Claude Code when working with the ESIA Pipeline r
 
 **Pipeline Duration:** 12-35 minutes per document
 
+### Quick Start for Claude Code
+
+When working on this project:
+1. **First time?** Read `pipeline_flow.md` for step-by-step execution
+2. **Installing deps?** See `REQUIREMENTS_GUIDE.md` for complete setup
+3. **Understanding structure?** Check `DIRECTORY_STRUCTURE.md` (0% duplication)
+4. **Need to debug?** Use `--verbose` flag and check `data/outputs/` for logs
+5. **Making changes?** Update this file if architecture changes
+
 ---
 
 ## Architecture Overview
@@ -733,8 +742,105 @@ Invoke-Item data/outputs/doc_review.xlsx  # Open in Excel
 
 ---
 
+## For Claude Code Users
+
+### When Claude Code Opens This Project
+
+This guide helps Claude Code understand the ESIA Pipeline structure and best practices. Key points:
+
+1. **Do NOT create new directories** - The 2 existing directories are complementary, not redundant
+   - `esia-fact-extractor-pipeline` (Steps 1 & 2 - Extraction)
+   - `esia-fact-analyzer` (Step 3 - Analysis)
+
+2. **Always use consolidated `requirements.txt`** in the pipeline root
+   - Old location `esia-fact-extractor-pipeline/requirements.txt` is deprecated
+   - References parent for backward compatibility
+
+3. **Respect architecture separation:**
+   - Extractor uses LLM (Gemini API) - requires API keys, computationally intensive
+   - Analyzer uses rules only - no LLM, fast, self-contained
+   - Keep them separate for maintainability
+
+4. **Windows PowerShell is the primary OS** for development
+   - Use `$env:` syntax for environment variables
+   - Use backticks for line continuation (`)
+   - Use `Get-Item`, `Get-Content` for file operations
+
+5. **Key files to preserve:**
+   - `run-esia-pipeline.py` - Main orchestrator (don't split into submodules)
+   - `data/archetypes/` - Domain knowledge (reference data)
+   - `src/generated_signatures.py` - Auto-generated, don't edit manually
+
+6. **Before making changes:**
+   - Read DIRECTORY_STRUCTURE.md to understand no duplication exists
+   - Update CLAUDE.md if you change architecture
+   - Keep requirements.txt consolidated
+   - Test with `--verbose` flag
+
+---
+
+## Common Claude Code Tasks
+
+### Task: Add New Dependency
+1. Add to `packages/pipeline/requirements.txt` (only location)
+2. Add comment explaining what it's for
+3. Update `REQUIREMENTS_GUIDE.md` if adding optional feature
+4. Commit both files together
+
+### Task: Fix Bug in Extraction
+1. Locate in `esia-fact-extractor-pipeline/src/` or `step*_*.py`
+2. Check if related to DSPy signatures - see `generated_signatures.py`
+3. Check if related to LLM - see `src/llm_manager.py`
+4. Test both with `--steps 1` and `--steps 2` separately
+
+### Task: Fix Bug in Analysis
+1. Locate in `esia-fact-analyzer/esia_analyzer/`
+2. Check consistency.py, gaps.py, thresholds.py for logic
+3. Check exporters/html.py and exporters/excel.py for output formatting
+4. Test with `--steps 3` only
+
+### Task: Add New Feature
+1. **If extraction-related:** Add to extractor pipeline, update signatures if needed
+2. **If analysis-related:** Add to analyzer, update export modules
+3. **If both:** Create new module, import in both if necessary
+4. **Update documentation:** CLAUDE.md, add comments, update REQUIREMENTS_GUIDE.md if needed
+
+### Task: Improve Performance
+1. **Step 1:** Check `step1_docling_hybrid_chunking.py` for GPU usage
+2. **Step 2:** Check `src/llm_manager.py` for batch processing opportunities
+3. **Step 3:** Check `esia_analyzer/reviewer.py` for optimization opportunities
+4. **Benchmark:** Use `--verbose` to see timing per step
+
+---
+
+## Red Flags (Don't Do This)
+
+❌ **Don't merge the two main directories** - They serve different purposes
+❌ **Don't duplicate code between extractor and analyzer** - Maintain separation
+❌ **Don't hardcode API keys** - Always use environment variables
+❌ **Don't remove JSONL streaming in Step 1** - It's memory-efficient
+❌ **Don't add LLM to analyzer** - It's intentionally rule-based for reliability
+❌ **Don't ignore `--verbose` output** - It's crucial for debugging
+❌ **Don't forget to update CLAUDE.md** - When architecture changes
+
+---
+
+## Testing Checklist Before Committing
+
+- [ ] Run complete pipeline: `python run-esia-pipeline.py test.pdf --steps 1,2,3 --verbose`
+- [ ] Test with CPU mode: `--gpu-mode cpu` (if touching Step 1)
+- [ ] Check imports work: All new imports in `requirements.txt`
+- [ ] Test Windows PowerShell: Use proper `$env:` syntax
+- [ ] Update documentation: Any architectural changes?
+- [ ] No hardcoded paths: Use relative paths only
+- [ ] No API keys committed: Check `.gitignore` is respected
+- [ ] Clean up temp files: Check `/data/outputs/` before commit
+
+---
+
 **Last Updated:** December 1, 2025
-**Version:** 1.0
+**Version:** 1.1 (Claude Code Edition)
 **Status:** Active Development
 **Python:** 3.8+ required
 **OS:** Windows (PowerShell), Linux/Mac (Bash)
+**Target Audience:** Claude Code developers
