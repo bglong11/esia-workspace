@@ -1,0 +1,115 @@
+================================================================================
+STEP 1 TEST - SUMMARY REPORT
+================================================================================
+
+TEST DATE:     2025-11-27 01:08 UTC
+STATUS:        SUCCESS ✓
+DURATION:      ~35-40 seconds
+
+INPUT:
+  File:        TL_IPP_Supp_ESIA_2025-09-15.pdf
+  Size:        3.8 MB
+  Pages:       77
+  Location:    ./data/inputs/pdfs/
+
+OUTPUT LOCATION:
+  ./data/outputs/
+
+FILES GENERATED:
+  - TL_IPP_Supp_ESIA_2025-09-15_chunks.jsonl    (182 KB, 117 lines)
+  - TL_IPP_Supp_ESIA_2025-09-15_meta.json       (50 KB)
+
+PROCESSING RESULTS:
+  Chunks:         117
+  Tables:         13
+  Total Tokens:   20,664
+  Avg/Chunk:      177 tokens
+
+SYSTEM INFO:
+  GPU:            NVIDIA GeForce RTX 2060 (6 GB VRAM)
+  CUDA Driver:    13.0
+  Python:         3.13.0
+  PyTorch:        2.7.1 (CPU variant - can be optimized)
+
+DATA VALIDATION:
+  ✓ All 117 chunks have valid JSON format
+  ✓ Page numbers extracted from provenance
+  ✓ Token counts accurate using tiktoken
+  ✓ Metadata complete and consistent
+  ✓ Tables extracted with page numbers
+  ✓ Ready for Step 2 (DSPy extraction)
+
+================================================================================
+KEY FILES CREATED:
+================================================================================
+
+1. STEP1_TEST_RESULTS.md
+   - Detailed test results
+   - GPU optimization recommendations
+   - Data quality checks
+   - Next steps
+
+2. GPU_SETUP_GUIDE.md
+   - 5-minute GPU setup instructions
+   - Performance comparison (3-5x speedup expected)
+   - Troubleshooting guide
+   - Installation verification
+
+3. CLAUDE.md (improved)
+   - Comprehensive architecture documentation
+   - Both Step 1 and Step 2 details
+   - Development tasks and debugging
+   - Configuration reference
+
+================================================================================
+NEXT STEPS:
+================================================================================
+
+SHORT TERM:
+  1. Install CUDA-enabled PyTorch:
+     pip uninstall torch -y
+     pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+  2. Verify GPU is working:
+     python -c "import torch; print(torch.cuda.is_available())"
+
+  3. Re-run Step 1 with GPU:
+     python step1_docling_hybrid_chunking.py ./data/inputs/pdfs/TL_IPP_Supp_ESIA_2025-09-15.pdf \
+       -o ./data/outputs --gpu-mode auto
+
+MEDIUM TERM:
+  4. Proceed to Step 2 (fact extraction with DSPy):
+     - Set up .env with GOOGLE_API_KEY
+     - Run: python src/esia_extractor.py --chunks ./data/outputs/TL_IPP_Supp_ESIA_2025-09-15_chunks.jsonl
+
+  5. Validate extracted facts:
+     - Run: python src/validator.py
+
+================================================================================
+COMMAND REFERENCE:
+================================================================================
+
+Step 1 - CPU (current, ~40 sec):
+  python step1_docling_hybrid_chunking.py ./data/inputs/pdfs/TL_IPP_Supp_ESIA_2025-09-15.pdf \
+    -o ./data/outputs --gpu-mode cpu
+
+Step 1 - GPU (expected ~10 sec after CUDA setup):
+  python step1_docling_hybrid_chunking.py ./data/inputs/pdfs/TL_IPP_Supp_ESIA_2025-09-15.pdf \
+    -o ./data/outputs --gpu-mode auto
+
+Step 1 - Custom (2000 token chunks, images, verbose):
+  python step1_docling_hybrid_chunking.py ./data/inputs/pdfs/TL_IPP_Supp_ESIA_2025-09-15.pdf \
+    -o ./data/outputs --gpu-mode auto --chunk-max-tokens 2000 --enable-images --verbose
+
+================================================================================
+OUTPUT VERIFICATION:
+================================================================================
+
+Chunk count: 117 lines
+Metadata chunks: 117
+Tables: 13
+Total tokens: 20,664
+
+All data cross-validated and ready for Step 2.
+
+================================================================================

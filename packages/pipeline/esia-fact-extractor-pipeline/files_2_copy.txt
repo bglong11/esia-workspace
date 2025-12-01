@@ -1,0 +1,16 @@
+  Complete List of All Python Files
+
+  | #   | File Path                       | Purpose                              |
+  |-----|---------------------------------|--------------------------------------|
+  | 1   | extract_direct_file.py          | Main entry point                     |
+  | 2   | src/config.py                   | API clients & environment config     |
+  | 3   | src/esia_extractor.py           | Core DSPy extraction engine          |
+  | 4   | src/validator.py                | Fact validation (unit plausibility)  |
+  | 5   | src/document_preprocessor.py    | Image removal from PDFs/DOCX         |
+  | 6   | src/project_type_classifier.py  | Auto-detect project type             |
+  | 7   | src/generated_signatures.py     | 30+ domain extraction signatures     |
+  | 8   | src/llm_manager.py              | Multi-provider LLM abstraction       |
+  | 9   | src/archetype_merger.py         | Merge core + project-type archetypes |
+  | 10  | src/ifc_compliance_validator.py | IFC Standards validation (optional)  |
+  
+  

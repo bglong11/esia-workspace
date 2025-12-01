@@ -1,0 +1,5 @@
+docling>=1.0.0
+docling-core[chunking-openai]>=1.0.0
+tiktoken>=0.5.0
+torch>=2.0.0
+tqdm>=4.65.0
