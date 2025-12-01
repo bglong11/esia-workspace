@@ -11,11 +11,12 @@ export default defineConfig(({ mode }) => {
         strictPort: false,
         proxy: {
           '/api': {
-            target: 'http://localhost:5001',
+            target: 'http://127.0.0.1:5000',
             changeOrigin: true,
             rewrite: (path) => path.replace(/^\/api/, '/api'),
             ws: true,
-            secure: false
+            secure: false,
+            timeout: 30000
           }
         },
         middlewareMode: false,

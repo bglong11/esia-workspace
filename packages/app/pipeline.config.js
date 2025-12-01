@@ -14,26 +14,40 @@ export const pipelineConfig = {
 
   // Base working directory for script execution
   // This is where the scripts will run from
-  workingDir: 'M:/GitHub/esia-pipeline',
+  workingDir: '../pipeline/esia-fact-extractor-pipeline',
 
   // ESIA Pipeline folder location
-  pipelineFolder: 'M:/GitHub/esia-pipeline',
+  pipelineFolder: '../pipeline',
 
-  // Main pipeline script - the ESIA pipeline uses run-esia-pipeline.py
-  // This single script orchestrates the entire 3-step pipeline:
-  // 1. Chunk PDF into semantic chunks with page tracking
-  // 2. Extract domain-specific facts using archetype-based extraction
-  // 3. Analyze extracted facts for consistency and compliance
+  // Main pipeline script - Step 1: Docling Hybrid Chunking
+  // This orchestrates the complete 3-step ESIA pipeline:
+  // 1. Chunk PDF into semantic chunks with page tracking (step1_docling_hybrid_chunking.py)
+  // 2. Extract domain-specific facts using archetype-based extraction (step3_extraction_with_archetypes.py)
+  // 3. Analyze extracted facts for consistency and compliance (esia-fact-analyzer/analyze_esia_v2.py)
   steps: [
     {
-      id: 'full_pipeline',
-      name: 'ESIA Full Pipeline',
-      description: 'Run complete ESIA pipeline: chunking, extraction, and analysis',
-      script: 'M:/GitHub/esia-pipeline/run-esia-pipeline.py',
-      // Pass the PDF file path to the pipeline script
-      // The script expects the PDF to be in data/pdf/ directory
-      args: ['{PDF_FILE}'],
-      timeout: 1800000, // 30 minutes - full pipeline takes time
+      id: 'step1_chunking',
+      name: 'Step 1: Document Chunking',
+      description: 'Converting PDF to semantic chunks with page tracking using Docling...',
+      script: 'step1_docling_hybrid_chunking.py',
+      args: ['{PDF_FILE}', '-o', '../data/outputs'],
+      timeout: 600000, // 10 minutes for chunking
+    },
+    {
+      id: 'step2_extraction',
+      name: 'Step 2: Fact Extraction',
+      description: 'Extracting domain-specific facts using archetype-based mapping...',
+      script: 'step3_extraction_with_archetypes.py',
+      args: ['--chunks', '../data/outputs/{ROOT_NAME}_chunks.jsonl', '--output', '../data/outputs/{ROOT_NAME}_facts.json'],
+      timeout: 900000, // 15 minutes for extraction
+    },
+    {
+      id: 'step3_analysis',
+      name: 'Step 3: Fact Analysis',
+      description: 'Analyzing facts for consistency, compliance, and generating reports...',
+      script: '../esia-fact-analyzer/analyze_esia_v2.py',
+      args: ['--input-dir', '../data/outputs', '--output-dir', '../data/outputs'],
+      timeout: 300000, // 5 minutes for analysis
     },
   ],
 
