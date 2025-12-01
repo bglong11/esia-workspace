@@ -15,7 +15,7 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 # Check if venv312 exists
 $VenvPath = Join-Path $ScriptDir "venv312"
 if (-not (Test-Path $VenvPath)) {
-    Write-Host "❌ Error: venv312 not found at $VenvPath" -ForegroundColor Red
+    Write-Host "[ERROR] venv312 not found at $VenvPath" -ForegroundColor Red
     Write-Host "Please create it first with:" -ForegroundColor Yellow
     Write-Host "  `"M:\Python\Python3_12\python.exe`" -m venv venv312" -ForegroundColor Cyan
     exit 1
@@ -24,23 +24,23 @@ if (-not (Test-Path $VenvPath)) {
 # Activate virtual environment
 $ActivateScript = Join-Path $VenvPath "Scripts\Activate.ps1"
 if (-not (Test-Path $ActivateScript)) {
-    Write-Host "❌ Error: Activation script not found at $ActivateScript" -ForegroundColor Red
+    Write-Host "[ERROR] Activation script not found at $ActivateScript" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "🐍 Activating Python 3.12 virtual environment..." -ForegroundColor Cyan
+Write-Host "[INFO] Activating Python 3.12 virtual environment..." -ForegroundColor Cyan
 & $ActivateScript
 
 # Verify Python version
 Write-Host ""
-Write-Host "📦 Python Version:" -ForegroundColor Cyan
+Write-Host "[INFO] Python Version:" -ForegroundColor Cyan
 python --version
 Write-Host ""
 
 # Build the command
 $Command = "python run-esia-pipeline.py `"$PdfFile`" $($AdditionalArgs -join ' ')"
 
-Write-Host "🚀 Running pipeline..." -ForegroundColor Green
+Write-Host "[INFO] Running pipeline..." -ForegroundColor Green
 Write-Host "Command: $Command" -ForegroundColor Gray
 Write-Host ""
 
@@ -52,10 +52,10 @@ $ExitCode = $LASTEXITCODE
 
 if ($ExitCode -eq 0) {
     Write-Host ""
-    Write-Host "✅ Pipeline completed successfully!" -ForegroundColor Green
+    Write-Host "[SUCCESS] Pipeline completed successfully!" -ForegroundColor Green
 } else {
     Write-Host ""
-    Write-Host "❌ Pipeline failed with exit code: $ExitCode" -ForegroundColor Red
+    Write-Host "[ERROR] Pipeline failed with exit code: $ExitCode" -ForegroundColor Red
 }
 
 exit $ExitCode
