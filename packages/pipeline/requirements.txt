@@ -1,0 +1,102 @@
+# ESIA Pipeline - Complete Requirements
+#
+# Core dependencies for the complete 3-step pipeline:
+# Step 1: Document Chunking (PDF/DOCX → semantic chunks)
+# Step 2: Fact Extraction (chunks → structured facts via LLM)
+# Step 3: Quality Analysis (facts → HTML dashboard + Excel report)
+#
+# Install with: pip install -r requirements.txt
+
+# ============================================================================
+# CORE DEPENDENCIES - ESSENTIAL FOR PIPELINE OPERATION
+# ============================================================================
+
+# Step 1: Document Processing & Chunking
+docling>=1.0.0                          # PDF/DOCX parsing and document conversion
+docling-core[chunking-openai]>=1.0.0   # HybridChunker for token-aware semantic chunking
+tiktoken>=0.5.0                         # OpenAI tokenizer for exact token counting
+torch>=2.0.0                            # GPU detection and acceleration support
+tqdm>=4.65.0                            # Progress bars for processing feedback
+
+# Step 2: Fact Extraction Framework
+dspy-ai                                 # DSPy framework for structured extraction with LLM
+google-genai                            # Google Gemini API client (v1 SDK)
+
+# Step 3: Analysis & Export
+openpyxl                                # Excel (.xlsx) workbook generation
+
+# ============================================================================
+# OPTIONAL DEPENDENCIES - FOR EXTRA FEATURES
+# ============================================================================
+
+# Optional: Translation Support (for non-English ESIAs)
+# Uncomment if you need to translate documents to English
+# langdetect                            # Language detection
+# google-cloud-translate                # Google Cloud Translation API
+# requests                              # HTTP library for LibreTranslate API
+
+# Optional: Alternative LLM Provider (fallback to Gemini)
+# Uncomment if you want to use OpenRouter instead of Google Gemini
+# openrouter                            # OpenRouter API client
+
+# Optional: Environment Configuration
+# Uncomment for automatic .env file loading (recommended for development)
+# python-dotenv                         # Load environment variables from .env files
+
+# ============================================================================
+# PYTHON VERSION REQUIREMENT
+# ============================================================================
+# Python 3.8+ required (uses type hints, dataclasses, and f-strings)
+
+# ============================================================================
+# INSTALLATION QUICK START
+# ============================================================================
+#
+# 1. Basic installation (all core features):
+#    pip install -r requirements.txt
+#
+# 2. With translation support:
+#    pip install -r requirements.txt langdetect requests
+#
+# 3. With environment management:
+#    pip install -r requirements.txt python-dotenv
+#
+# 4. Full installation (all features):
+#    pip install -r requirements.txt langdetect requests python-dotenv openrouter
+#
+# ============================================================================
+# REQUIRED ENVIRONMENT VARIABLES
+# ============================================================================
+#
+# Create a .env file in the pipeline directory with:
+#
+#   GOOGLE_API_KEY=your_google_api_key_here
+#   OPENROUTER_API_KEY=your_openrouter_api_key_here  # Optional
+#
+# Or set them in your shell before running the pipeline:
+#
+# Windows PowerShell:
+#   $env:GOOGLE_API_KEY="your_key"
+#   python run-esia-pipeline.py document.pdf
+#
+# Linux/Mac:
+#   export GOOGLE_API_KEY="your_key"
+#   python run-esia-pipeline.py document.pdf
+#
+# ============================================================================
+# USAGE
+# ============================================================================
+#
+# Run complete pipeline (all 3 steps):
+#   python run-esia-pipeline.py data/pdfs/document.pdf
+#
+# Run specific steps:
+#   python run-esia-pipeline.py document.pdf --steps 1      # Chunking only
+#   python run-esia-pipeline.py document.pdf --steps 2      # Extraction only
+#   python run-esia-pipeline.py document.pdf --steps 3      # Analysis only
+#   python run-esia-pipeline.py document.pdf --steps 1,3    # Skip extraction
+#
+# Enable verbose output:
+#   python run-esia-pipeline.py document.pdf --verbose
+#
+# ============================================================================

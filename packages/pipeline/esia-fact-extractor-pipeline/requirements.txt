@@ -1,5 +1,14 @@
-docling>=1.0.0
-docling-core[chunking-openai]>=1.0.0
-tiktoken>=0.5.0
-torch>=2.0.0
-tqdm>=4.65.0
+# DEPRECATED: This file is kept for backward compatibility only.
+#
+# The main requirements.txt has been consolidated in the parent directory:
+# M:\GitHub\esia-workspace\packages\pipeline\requirements.txt
+#
+# Install using:
+#   cd ..
+#   pip install -r requirements.txt
+#
+# Or from this directory:
+#   pip install -r ../requirements.txt
+
+# Include the parent requirements.txt
+-r ../requirements.txt
