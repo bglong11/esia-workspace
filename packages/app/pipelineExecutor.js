@@ -96,7 +96,7 @@ function executeStep(step, pdfFilename, sanitizedName, uploadedFilePath, executi
       child.stdout.on('data', (data) => {
         const output = data.toString();
         stdout += output;
-        console.log(`[Pipeline] ${step.id}: ${output}`);
+        console.log(`[Pipeline] ${step.id}: ${output}`.trim());
 
         // Extract page progress from output - try multiple patterns
         let pageMatch = null;
@@ -158,6 +158,7 @@ function executeStep(step, pdfFilename, sanitizedName, uploadedFilePath, executi
               currentPage,
               totalPages: totalPages || currentPage
             };
+            console.log(`[Pipeline] Progress tracked for ${step.id}: page ${currentPage} of ${totalPages || currentPage}`);
           }
         }
       });

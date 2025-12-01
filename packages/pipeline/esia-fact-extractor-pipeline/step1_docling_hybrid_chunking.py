@@ -780,9 +780,10 @@ def process_document(
                 chunk_stats['pages'].add(chunk_original.page)
 
                 # Progress tracking for frontend - output format that pipelineExecutor.js can parse
-                # Pattern: "Page X of Y" (matches pipelineExecutor.js pattern 2)
+                # Pattern: "page X of Y" (matches pipelineExecutor.js pattern 2 - case insensitive)
                 if chunk_stats['count'] % 10 == 0:  # Update every 10 chunks
-                    print(f"[PROGRESS] Page {chunk_original.page} of {total_pages}", flush=True)
+                    sys.stdout.write(f"page {chunk_original.page} of {total_pages}\n")
+                    sys.stdout.flush()
 
         if chunk_stats['count'] == 0:
             chunk_stats['min_tokens'] = 0
