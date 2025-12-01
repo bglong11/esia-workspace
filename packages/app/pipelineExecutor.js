@@ -260,21 +260,37 @@ export async function executePipeline(pdfFilename, uploadedFilePath) {
         execution.steps.push(stepData);
         executionStatus.set(executionId, execution);
 
-        // Execute the step and update progress periodically
-        const stepResult = await executeStep(stepConfig, pdfFilename, sanitizedName, uploadedFilePath, executionId, outputDir);
-
-        // Sync final progress from global tracker before marking complete
+        // Execute the step with real-time progress updates
         const stepIndex = execution.steps.findIndex((s) => s.stepId === stepConfig.id);
-        const finalProgress = global.pipelineProgress[executionId]?.[stepConfig.id];
-        if (stepIndex !== -1 && finalProgress) {
-          execution.steps[stepIndex].progress = finalProgress;
+
+        // Set up periodic progress sync from global tracker
+        const progressInterval = setInterval(() => {
+          const currentProgress = global.pipelineProgress[executionId]?.[stepConfig.id];
+          if (stepIndex !== -1 && currentProgress) {
+            execution.steps[stepIndex].progress = currentProgress;
+            executionStatus.set(executionId, execution);
+          }
+        }, 500); // Update progress every 500ms
+
+        let stepResult;
+        try {
+          stepResult = await executeStep(stepConfig, pdfFilename, sanitizedName, uploadedFilePath, executionId, outputDir);
+          clearInterval(progressInterval);
+
+          // Sync final progress from global tracker before marking complete
+          const finalProgress = global.pipelineProgress[executionId]?.[stepConfig.id];
+          if (stepIndex !== -1 && finalProgress) {
+            execution.steps[stepIndex].progress = finalProgress;
+          }
+        } catch (error) {
+          clearInterval(progressInterval);
+          throw error;
         }
 
         // Mark step as completed
-        const stepIndexForCompletion = execution.steps.findIndex((s) => s.stepId === stepConfig.id);
-        if (stepIndexForCompletion !== -1) {
-          execution.steps[stepIndexForCompletion] = {
-            ...execution.steps[stepIndexForCompletion],
+        if (stepIndex !== -1) {
+          execution.steps[stepIndex] = {
+            ...execution.steps[stepIndex],
             status: 'completed',
             output: stepResult.output,
           };
