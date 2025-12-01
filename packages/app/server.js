@@ -11,6 +11,21 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Set UTF-8 charset for all JSON responses
+app.use(express.json());
+app.set('json spaces', 2);
+
+// Middleware to set charset on all responses
+app.use((req, res, next) => {
+  const originalJson = res.json;
+  res.json = function(data) {
+    res.charset = 'utf-8';
+    res.set('Content-Type', 'application/json; charset=utf-8');
+    return originalJson.call(this, data);
+  };
+  next();
+});
+
 // Create data/pdf directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'data', 'pdf');
 if (!fs.existsSync(uploadsDir)) {
@@ -63,11 +78,11 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     // This allows the response to return immediately while pipeline runs in background
     const uploadedFilePath = req.file.path;
 
-    // Create a placeholder execution object for immediate response
+    // Generate execution ID that will be shared between server response and pipeline executor
     const executionId = `exec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    // Start pipeline in background (don't await)
-    executePipeline(req.file.filename, uploadedFilePath).catch(error => {
+    // Start pipeline in background (don't await) - pass executionId so it's consistent
+    executePipeline(req.file.filename, uploadedFilePath, executionId).catch(error => {
       console.error(`[Pipeline] Background execution error for ${executionId}:`, error);
     });
 

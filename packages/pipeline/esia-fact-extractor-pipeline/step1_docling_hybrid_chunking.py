@@ -772,8 +772,13 @@ def process_document(
                 # Write to original JSONL (always)
                 f.write(json.dumps(chunk_original.to_dict(), ensure_ascii=False) + '\n')
 
-                # Update stats
+                # Output progress every 10 chunks (so frontend can track progress)
                 chunk_stats['count'] += 1
+                if chunk_stats['count'] % 10 == 0:
+                    # Print progress in a format the pipeline executor regex can parse
+                    print(f"[PROGRESS] Page {chunk_original.page} of {total_pages}", flush=True)
+
+                # Update stats
                 chunk_stats['total_tokens'] += chunk_original.token_count
                 chunk_stats['min_tokens'] = min(chunk_stats['min_tokens'], chunk_original.token_count)
                 chunk_stats['max_tokens'] = max(chunk_stats['max_tokens'], chunk_original.token_count)

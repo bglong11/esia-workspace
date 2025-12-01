@@ -54,7 +54,7 @@ function executeStep(step, pdfFilename, sanitizedName, uploadedFilePath, executi
       console.log(`[Pipeline] Running: ${pipelineConfig.pythonExecutable} ${scriptPath} ${args.join(' ')}`);
 
       // Spawn the Python process
-      const child = spawn(pipelineConfig.pythonExecutable, [scriptPath, ...args], {
+      const child = spawn(pipelineConfig.pythonExecutable, ['-u', scriptPath, ...args], {
         cwd: pipelineConfig.workingDir,
         timeout: step.timeout,
         env: {
@@ -103,9 +103,9 @@ function executeStep(step, pdfFilename, sanitizedName, uploadedFilePath, executi
         let currentPage = null;
         let totalPages = null;
 
-        // Pattern 1: JSON format with "page" field: {"chunk_id": 0, "page": 42, ...}
+        // Pattern 1: JSON format with "page" field (more flexible) - matches "page": X anywhere in JSON
         try {
-          const jsonMatch = output.match(/\{"[^}]*"page"\s*:\s*(\d+)[^}]*\}/);
+          const jsonMatch = output.match(/"page"\s*:\s*(\d+)/);
           if (jsonMatch) {
             currentPage = parseInt(jsonMatch[1]);
             // For JSON chunks, we'll track the highest page number seen so far as the total
@@ -116,6 +116,7 @@ function executeStep(step, pdfFilename, sanitizedName, uploadedFilePath, executi
               totalPages = currentPage;
             }
             pageMatch = true;
+            console.log(`[Pipeline] Pattern 1 matched: "page": ${currentPage} (total tracked: ${totalPages})`);
           }
         } catch (e) {
           // Silently ignore JSON parsing errors
@@ -128,6 +129,7 @@ function executeStep(step, pdfFilename, sanitizedName, uploadedFilePath, executi
             currentPage = parseInt(match[1]);
             totalPages = parseInt(match[2]);
             pageMatch = true;
+            console.log(`[Pipeline] Pattern 2 matched: page ${currentPage} of ${totalPages}`);
           }
         }
 
@@ -138,6 +140,7 @@ function executeStep(step, pdfFilename, sanitizedName, uploadedFilePath, executi
             currentPage = parseInt(match[1]);
             totalPages = null;
             pageMatch = true;
+            console.log(`[Pipeline] Pattern 3 matched: processing page ${currentPage}`);
           }
         }
 
@@ -148,6 +151,18 @@ function executeStep(step, pdfFilename, sanitizedName, uploadedFilePath, executi
             currentPage = parseInt(match[1]);
             totalPages = parseInt(match[2]);
             pageMatch = true;
+            console.log(`[Pipeline] Pattern 4 matched: ${currentPage} of ${totalPages}`);
+          }
+        }
+
+        // Pattern 5: Explicit progress format: "[PROGRESS] Page X of Y"
+        if (!pageMatch) {
+          const match = output.match(/\[PROGRESS\]\s+Page\s+(\d+)\s+of\s+(\d+)/);
+          if (match) {
+            currentPage = parseInt(match[1]);
+            totalPages = parseInt(match[2]);
+            pageMatch = true;
+            console.log(`[Pipeline] Pattern 5 matched (explicit): Page ${currentPage} of ${totalPages}`);
           }
         }
 
@@ -158,7 +173,9 @@ function executeStep(step, pdfFilename, sanitizedName, uploadedFilePath, executi
               currentPage,
               totalPages: totalPages || currentPage
             };
-            console.log(`[Pipeline] Progress tracked for ${step.id}: page ${currentPage} of ${totalPages || currentPage}`);
+            console.log(`[Pipeline] ✓ Progress tracked for ${step.id}: page ${currentPage} of ${totalPages || currentPage}`);
+          } else {
+            console.log(`[Pipeline] ⚠ Warning: pipelineProgress not initialized for ${executionId}/${step.id}`);
           }
         }
       });
@@ -208,16 +225,23 @@ function executeStep(step, pdfFilename, sanitizedName, uploadedFilePath, executi
 
 /**
  * Executes the entire pipeline for an uploaded PDF
+ * @param {string} pdfFilename - The filename of the uploaded PDF
+ * @param {string} uploadedFilePath - The full path to the uploaded PDF file
+ * @param {string} executionId - Optional execution ID (if not provided, one will be generated)
  */
-export async function executePipeline(pdfFilename, uploadedFilePath) {
-  const executionId = `exec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+export async function executePipeline(pdfFilename, uploadedFilePath, executionId = null) {
+  if (!executionId) {
+    executionId = `exec-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
   const sanitizedName = sanitizeFilename(pdfFilename);
 
   // Initialize global progress tracker for this execution
   if (!global.pipelineProgress) {
     global.pipelineProgress = {};
+    console.log(`[Pipeline] Initialized global.pipelineProgress`);
   }
   global.pipelineProgress[executionId] = {};
+  console.log(`[Pipeline] Initialized progress tracking for execution: ${executionId}`);
 
   // Initialize execution status
   const execution = {
