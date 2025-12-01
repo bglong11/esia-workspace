@@ -176,6 +176,7 @@ def run_chunking(pdf_path: str, pdf_stem: str, logger: logging.Logger) -> None:
         "step1_docling_hybrid_chunking.py",
         pdf_path_abs,
         "--output-dir", str(UNIFIED_OUTPUT_DIR),
+        "--gpu-mode", "cpu",
     ]
 
     logger.info(f"Command: {' '.join(cmd)}")
