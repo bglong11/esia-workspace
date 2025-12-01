@@ -27,6 +27,7 @@ sys.path.append(os.getcwd())
 
 from src.esia_extractor import ESIAExtractor
 from src.archetype_mapper import ArchetypeMapper
+from src.config import LLM_PROVIDER, OPENROUTER_MODEL
 
 
 def load_chunks(chunks_file: str, sample_size: Optional[int] = None) -> List[Dict[str, Any]]:
@@ -60,8 +61,8 @@ def extract_facts(chunks: List[Dict], verbose: bool = False) -> Dict[str, Any]:
     print()
 
     print("Initializing DSPy extractor...")
-    extractor = ESIAExtractor()
-    print("[OK] Extractor initialized")
+    extractor = ESIAExtractor(model=OPENROUTER_MODEL, provider=LLM_PROVIDER)
+    print(f"[OK] Extractor initialized (provider: {LLM_PROVIDER}, model: {OPENROUTER_MODEL})")
     print()
 
     results = {

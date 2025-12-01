@@ -1,9 +1,20 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 from google import genai
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from workspace root .env.local
+# Path calculation: config.py is in packages/pipeline/esia-fact-extractor-pipeline/src/
+# So we need to go up 4 levels to reach workspace root:
+# src/ -> esia-fact-extractor-pipeline/ -> pipeline/ -> packages/ -> workspace root
+config_file_path = Path(__file__).resolve()  # Absolute path to config.py
+workspace_root = config_file_path.parent.parent.parent.parent.parent  # Go up 5 levels
+
+env_local_path = workspace_root / ".env.local"
+if env_local_path.exists():
+    load_dotenv(env_local_path, override=True)  # override=True to update existing vars
+else:
+    load_dotenv()  # Fallback to default behavior
 
 API_KEY = os.getenv("GOOGLE_API_KEY")
 
@@ -23,6 +34,17 @@ if OPENROUTER_API_KEY:
     except ImportError:
         print("OpenRouter package not installed. Install with `pip install openrouter`")
 
+
+# ============================================================================
+# LLM Configuration from .env.local
+# ============================================================================
+
+# LLM Provider and Models (configured in .env.local)
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "google")
+GOOGLE_MODEL = os.getenv("GOOGLE_MODEL", "gemini-2.5-flash")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-2.5-flash")
+LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.3"))
+LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", "2000"))
 
 # Constants
 STORE_NAME_PREFIX = "esia_store_"
