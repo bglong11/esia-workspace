@@ -38,7 +38,7 @@ export const pipelineConfig = {
       name: 'Step 2: Fact Extraction',
       description: 'Extracting domain-specific facts using archetype-based mapping...',
       script: 'step3_extraction_with_archetypes.py',
-      args: ['--chunks', '../data/outputs/{ROOT_NAME}_chunks.jsonl', '--output', '../data/outputs/{ROOT_NAME}_facts.json'],
+      args: ['--chunks', '../data/outputs/{PDF_ROOT}_chunks.jsonl', '--output', '../data/outputs/{PDF_ROOT}_facts.json'],
       timeout: 900000, // 15 minutes for extraction
     },
     {
@@ -69,12 +69,17 @@ export const pipelineConfig = {
  */
 export function getStepArgs(step, pdfFilename, sanitizedName, outputDir) {
   const rootName = sanitizedName.replace(/\.[^/.]+$/, ''); // Remove extension
+  // PDF root = filename without extension (keeps timestamp prefix)
+  // Extract just the filename (basename) from the full path if necessary
+  const baseName = path.basename(pdfFilename);
+  const pdfRoot = baseName.replace(/\.[^/.]+$/, '');
 
   return step.args.map(arg => {
     let processedArg = arg
       .replace('{PDF_FILE}', pdfFilename)
       .replace('{SANITIZED_NAME}', sanitizedName)
-      .replace('{ROOT_NAME}', rootName);
+      .replace('{ROOT_NAME}', rootName)
+      .replace('{PDF_ROOT}', pdfRoot);
 
     // Convert relative paths to absolute (those starting with ../)
     if (processedArg.startsWith('../')) {

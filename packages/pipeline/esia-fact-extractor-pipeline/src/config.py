@@ -10,9 +10,14 @@ from google import genai
 config_file_path = Path(__file__).resolve()  # Absolute path to config.py
 workspace_root = config_file_path.parent.parent.parent.parent.parent  # Go up 5 levels
 
+# Try .env.local first, then .env
 env_local_path = workspace_root / ".env.local"
+env_path = workspace_root / ".env"
+
 if env_local_path.exists():
     load_dotenv(env_local_path, override=True)  # override=True to update existing vars
+elif env_path.exists():
+    load_dotenv(env_path, override=True)  # Use .env if .env.local doesn't exist
 else:
     load_dotenv()  # Fallback to default behavior
 
