@@ -46,8 +46,7 @@ Write-Host ""
 
 # Start Backend Server in new window
 Write-Host "[*] Starting Backend Server (port $backendPort)..." -ForegroundColor Cyan
-$backendCmd = "cd `"$appPath`"; node server.js"
-Start-Process powershell.exe -ArgumentList "-NoExit -Command $backendCmd"
+Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "Set-Location -Path '$appPath'; & node server.js"
 
 Start-Sleep -Seconds 3
 Write-Host "[OK] Backend server started in new window" -ForegroundColor Green
@@ -55,8 +54,7 @@ Write-Host ""
 
 # Start Frontend Server in new window
 Write-Host "[*] Starting Frontend Server (port $frontendPort)..." -ForegroundColor Cyan
-$frontendCmd = "cd `"$appPath`"; npx vite"
-Start-Process powershell.exe -ArgumentList "-NoExit -Command $frontendCmd"
+Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "Set-Location -Path '$appPath'; & npx vite"
 
 Start-Sleep -Seconds 2
 Write-Host "[OK] Frontend server started in new window" -ForegroundColor Green
