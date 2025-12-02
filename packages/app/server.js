@@ -172,7 +172,8 @@ app.get('/api/download/:executionId', async (req, res) => {
     const outputDir = path.resolve(__dirname, '../pipeline/data/outputs');
 
     // Add all output files for this execution
-    const baseFilename = execution.pdfFilename.replace(/\.[^/.]+$/, ''); // Remove extension
+    // Use sanitizedName since that's what the pipeline uses for output files
+    const baseFilename = execution.sanitizedName;
 
     // List of expected output files
     const outputFiles = [
