@@ -1360,3 +1360,125 @@ class CulturallyAppropriateGRMSignature(dspy.Signature):
     )
 
 
+# =============================================================================
+# IFC Performance Standards (PS1-PS8) Signatures
+# =============================================================================
+
+class Ps1Signature(dspy.Signature):
+    """Extracted facts for IFC PS1: Assessment and Management of E&S Risks and Impacts."""
+    context = dspy.InputField(desc="The text content to extract facts from.")
+
+    esms_Policy_and_Commitment = dspy.OutputField(desc="Extract E&S policy statement, management commitment, organizational capacity", prefix="esms - Policy and Commitment: ")
+    esms_Risk_Identification = dspy.OutputField(desc="Extract E&S risk identification methodology, screening criteria, risk categorization", prefix="esms - Risk Identification: ")
+    esms_Management_Programs = dspy.OutputField(desc="Extract management programs, action plans, mitigation hierarchy application", prefix="esms - Management Programs: ")
+    esms_Organizational_Capacity = dspy.OutputField(desc="Extract E&S staffing, training programs, roles and responsibilities", prefix="esms - Organizational Capacity: ")
+    esms_Emergency_Preparedness = dspy.OutputField(desc="Extract emergency response plans, drills, coordination with authorities", prefix="esms - Emergency Preparedness: ")
+    stakeholder_Engagement_Plan = dspy.OutputField(desc="Extract stakeholder identification, engagement methods, disclosure requirements", prefix="stakeholder - Engagement Plan: ")
+    stakeholder_Grievance_Mechanism = dspy.OutputField(desc="Extract grievance procedures, response timelines, tracking systems", prefix="stakeholder - Grievance Mechanism: ")
+    monitoring_Reporting = dspy.OutputField(desc="Extract monitoring indicators, reporting frequency, adaptive management", prefix="monitoring - Reporting: ")
+
+
+class Ps2Signature(dspy.Signature):
+    """Extracted facts for IFC PS2: Labor and Working Conditions."""
+    context = dspy.InputField(desc="The text content to extract facts from.")
+
+    workforce_Working_Conditions = dspy.OutputField(desc="Extract employment terms, working hours, wages, benefits, leave policies", prefix="workforce - Working Conditions: ")
+    workforce_Non_Discrimination = dspy.OutputField(desc="Extract equal opportunity policies, anti-discrimination measures, diversity initiatives", prefix="workforce - Non Discrimination: ")
+    workforce_Retrenchment = dspy.OutputField(desc="Extract retrenchment plans, severance payments, outplacement support", prefix="workforce - Retrenchment: ")
+    ohs_Occupational_Health_Safety = dspy.OutputField(desc="Extract OHS management system, PPE, training, incident reporting, hazard identification", prefix="ohs - Occupational Health Safety: ")
+    ohs_Workplace_Hazards = dspy.OutputField(desc="Extract physical, chemical, biological hazards identified and controls", prefix="ohs - Workplace Hazards: ")
+    ohs_Accommodation = dspy.OutputField(desc="Extract worker accommodation standards, facilities, services provided", prefix="ohs - Accommodation: ")
+    rights_Workers_Organizations = dspy.OutputField(desc="Extract freedom of association, collective bargaining, worker representatives", prefix="rights - Workers Organizations: ")
+    rights_Forced_Labor = dspy.OutputField(desc="Extract forced labor prohibition, bonded labor checks, human trafficking prevention", prefix="rights - Forced Labor: ")
+    rights_Child_Labor = dspy.OutputField(desc="Extract child labor prohibition, age verification, young worker protections", prefix="rights - Child Labor: ")
+    supply_chain_Labor_Risks = dspy.OutputField(desc="Extract supply chain labor due diligence, contractor requirements, monitoring", prefix="supply_chain - Labor Risks: ")
+
+
+class Ps3Signature(dspy.Signature):
+    """Extracted facts for IFC PS3: Resource Efficiency and Pollution Prevention."""
+    context = dspy.InputField(desc="The text content to extract facts from.")
+
+    efficiency_Resource_Consumption = dspy.OutputField(desc="Extract energy use, water consumption, raw materials efficiency targets", prefix="efficiency - Resource Consumption: ")
+    efficiency_GHG_Emissions = dspy.OutputField(desc="Extract GHG inventory, Scope 1/2/3 emissions, reduction targets, carbon intensity", prefix="efficiency - GHG Emissions: ")
+    pollution_Air_Emissions = dspy.OutputField(desc="Extract air pollutants, emission sources, controls, monitoring, ambient standards", prefix="pollution - Air Emissions: ")
+    pollution_Wastewater = dspy.OutputField(desc="Extract effluent quality, treatment systems, discharge standards, receiving waters", prefix="pollution - Wastewater: ")
+    pollution_Waste_Management = dspy.OutputField(desc="Extract waste types, quantities, storage, treatment, disposal methods, recycling", prefix="pollution - Waste Management: ")
+    pollution_Hazardous_Materials = dspy.OutputField(desc="Extract hazmat handling, storage, spill prevention, emergency response", prefix="pollution - Hazardous Materials: ")
+    pollution_Pesticides = dspy.OutputField(desc="Extract pesticide use, IPM practices, banned substances, application controls", prefix="pollution - Pesticides: ")
+    standards_EHS_Guidelines = dspy.OutputField(desc="Extract applicable IFC EHS Guidelines, emission limits, compliance status", prefix="standards - EHS Guidelines: ")
+
+
+class Ps4Signature(dspy.Signature):
+    """Extracted facts for IFC PS4: Community Health, Safety and Security."""
+    context = dspy.InputField(desc="The text content to extract facts from.")
+
+    health_Community_Exposure = dspy.OutputField(desc="Extract community health risks, exposure pathways, vulnerable groups", prefix="health - Community Exposure: ")
+    health_Infrastructure_Safety = dspy.OutputField(desc="Extract infrastructure safety design, structural integrity, natural hazard resilience", prefix="health - Infrastructure Safety: ")
+    health_Ecosystem_Services = dspy.OutputField(desc="Extract impacts on provisioning services (water, food) communities depend on", prefix="health - Ecosystem Services: ")
+    health_Disease_Prevention = dspy.OutputField(desc="Extract communicable disease prevention, vector control, health programs", prefix="health - Disease Prevention: ")
+    safety_Emergency_Preparedness = dspy.OutputField(desc="Extract community emergency plans, warning systems, evacuation procedures", prefix="safety - Emergency Preparedness: ")
+    safety_Traffic_Transport = dspy.OutputField(desc="Extract traffic management, road safety measures, community access", prefix="safety - Traffic Transport: ")
+    security_Personnel_Conduct = dspy.OutputField(desc="Extract security force selection, training, rules of engagement, use of force", prefix="security - Personnel Conduct: ")
+    security_Human_Rights = dspy.OutputField(desc="Extract human rights due diligence for security, monitoring, incident response", prefix="security - Human Rights: ")
+
+
+class Ps5Signature(dspy.Signature):
+    """Extracted facts for IFC PS5: Land Acquisition and Involuntary Resettlement."""
+    context = dspy.InputField(desc="The text content to extract facts from.")
+
+    land_Affected_Area = dspy.OutputField(desc="Extract total land area affected, acquisition methods, land use changes", prefix="land - Affected Area: ")
+    land_Tenure_Status = dspy.OutputField(desc="Extract land ownership, tenure rights, legal status of affected lands", prefix="land - Tenure Status: ")
+    resettlement_Affected_Persons = dspy.OutputField(desc="Extract number of PAPs, households affected, demographics, displacement impacts", prefix="resettlement - Affected Persons: ")
+    resettlement_Action_Plan = dspy.OutputField(desc="Extract RAP/ARAP development, implementation timeline, monitoring", prefix="resettlement - Action Plan: ")
+    compensation_Framework = dspy.OutputField(desc="Extract compensation principles, valuation methods, replacement cost approach", prefix="compensation - Framework: ")
+    compensation_Entitlements = dspy.OutputField(desc="Extract entitlement matrix by category of affected person", prefix="compensation - Entitlements: ")
+    livelihood_Restoration = dspy.OutputField(desc="Extract livelihood restoration programs, income restoration targets, support measures", prefix="livelihood - Restoration: ")
+    vulnerable_Groups = dspy.OutputField(desc="Extract identification of vulnerable groups, special assistance measures", prefix="vulnerable - Groups: ")
+    consultation_Disclosure = dspy.OutputField(desc="Extract consultation process with affected communities, disclosure, participation", prefix="consultation - Disclosure: ")
+    grievance_Mechanism = dspy.OutputField(desc="Extract grievance redress for land/resettlement issues, resolution procedures", prefix="grievance - Mechanism: ")
+
+
+class Ps6Signature(dspy.Signature):
+    """Extracted facts for IFC PS6: Biodiversity Conservation and Sustainable Management."""
+    context = dspy.InputField(desc="The text content to extract facts from.")
+
+    habitat_Classification = dspy.OutputField(desc="Extract habitat type (natural/modified/critical), classification methodology", prefix="habitat - Classification: ")
+    habitat_Critical_Triggers = dspy.OutputField(desc="Extract critical habitat triggers, endangered species, endemic species, key biodiversity areas", prefix="habitat - Critical Triggers: ")
+    impacts_Direct_Indirect = dspy.OutputField(desc="Extract direct and indirect biodiversity impacts, habitat loss, fragmentation", prefix="impacts - Direct Indirect: ")
+    mitigation_Hierarchy = dspy.OutputField(desc="Extract avoidance, minimization, restoration, offset measures", prefix="mitigation - Hierarchy: ")
+    offsets_Biodiversity = dspy.OutputField(desc="Extract biodiversity offset requirements, no net loss, net gain commitments", prefix="offsets - Biodiversity: ")
+    ecosystem_Services = dspy.OutputField(desc="Extract priority ecosystem services, community dependence, mitigation measures", prefix="ecosystem - Services: ")
+    invasive_Species = dspy.OutputField(desc="Extract invasive species risks, prevention measures, management plans", prefix="invasive - Species: ")
+    protected_Areas = dspy.OutputField(desc="Extract proximity to protected areas, buffer zones, management coordination", prefix="protected - Areas: ")
+    monitoring_BAP = dspy.OutputField(desc="Extract Biodiversity Action Plan, monitoring indicators, adaptive management", prefix="monitoring - BAP: ")
+
+
+class Ps7Signature(dspy.Signature):
+    """Extracted facts for IFC PS7: Indigenous Peoples."""
+    context = dspy.InputField(desc="The text content to extract facts from.")
+
+    identification_IP_Presence = dspy.OutputField(desc="Extract indigenous peoples identification, communities affected, population estimates", prefix="identification - IP Presence: ")
+    identification_Characteristics = dspy.OutputField(desc="Extract self-identification, distinct language, customary institutions, attachment to land", prefix="identification - Characteristics: ")
+    engagement_FPIC = dspy.OutputField(desc="Extract Free Prior Informed Consent process, documentation, outcomes", prefix="engagement - FPIC: ")
+    engagement_Consultation = dspy.OutputField(desc="Extract culturally appropriate consultation methods, representation, timing", prefix="engagement - Consultation: ")
+    impacts_Land_Resources = dspy.OutputField(desc="Extract impacts on traditional lands, natural resources, livelihoods", prefix="impacts - Land Resources: ")
+    impacts_Cultural = dspy.OutputField(desc="Extract impacts on cultural heritage, sacred sites, traditional practices", prefix="impacts - Cultural: ")
+    benefits_Sharing = dspy.OutputField(desc="Extract benefit-sharing arrangements, development opportunities, agreements", prefix="benefits - Sharing: ")
+    mitigation_IPP = dspy.OutputField(desc="Extract Indigenous Peoples Plan, culturally appropriate measures", prefix="mitigation - IPP: ")
+    grievance_Culturally_Appropriate = dspy.OutputField(desc="Extract culturally appropriate grievance mechanism, traditional dispute resolution", prefix="grievance - Culturally Appropriate: ")
+
+
+class Ps8Signature(dspy.Signature):
+    """Extracted facts for IFC PS8: Cultural Heritage."""
+    context = dspy.InputField(desc="The text content to extract facts from.")
+
+    tangible_Archaeological = dspy.OutputField(desc="Extract archaeological sites, historical structures, artifacts identified", prefix="tangible - Archaeological: ")
+    tangible_Paleontological = dspy.OutputField(desc="Extract fossils, geological features of heritage value", prefix="tangible - Paleontological: ")
+    intangible_Heritage = dspy.OutputField(desc="Extract traditional knowledge, practices, expressions, ceremonies", prefix="intangible - Heritage: ")
+    sacred_Sites = dspy.OutputField(desc="Extract sacred natural sites, spiritual significance, community attachment", prefix="sacred - Sites: ")
+    impacts_Assessment = dspy.OutputField(desc="Extract cultural heritage impact assessment, significance evaluation", prefix="impacts - Assessment: ")
+    chance_Finds = dspy.OutputField(desc="Extract chance find procedures, notification requirements, work stoppage protocols", prefix="chance - Finds: ")
+    consultation_Communities = dspy.OutputField(desc="Extract consultation with affected communities, heritage custodians, authorities", prefix="consultation - Communities: ")
+    mitigation_Protection = dspy.OutputField(desc="Extract protection measures, relocation procedures, documentation requirements", prefix="mitigation - Protection: ")
+    access_Continued = dspy.OutputField(desc="Extract continued access provisions, cultural practice accommodations", prefix="access - Continued: ")
+    commercialization_Restrictions = dspy.OutputField(desc="Extract restrictions on commercial use of cultural heritage, benefit sharing", prefix="commercialization - Restrictions: ")

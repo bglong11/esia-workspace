@@ -57,7 +57,16 @@ from src.generated_signatures import (
     FinancialIntermediaryESMSSignature,
     # Phase 3B: Culturally appropriate GRM
     GenderActionPlanSignature,
-    CulturallyAppropriateGRMSignature
+    CulturallyAppropriateGRMSignature,
+    # IFC Performance Standards (PS1-PS8)
+    Ps1Signature,
+    Ps2Signature,
+    Ps3Signature,
+    Ps4Signature,
+    Ps5Signature,
+    Ps6Signature,
+    Ps7Signature,
+    Ps8Signature,
 )
 from src.llm_manager import LLMManager
 
@@ -114,16 +123,16 @@ class ESIAExtractor:
             "manufacturing_pharmaceuticals": "manufacturing_general_specific_impacts",
             "manufacturing_textiles": "manufacturing_general_specific_impacts",
 
-            # IFC Performance Standards (PS1-PS8) - these map to core ESIA sections
-            "PS1": "Environmental And Social Management Plan Esmp",
-            "PS2": "baseline_conditions",  # Labor and working conditions
-            "PS3": "environmental_and_social_impact_assessment",  # Resource efficiency
-            "PS4": "baseline_conditions",  # Community health and safety
-            "PS5": "project_description",  # Land acquisition and resettlement
-            "PS6": "baseline_conditions",  # Biodiversity
-            "PS7": "public_consultation_and_disclosure",  # Indigenous peoples
-            "PS8": "baseline_conditions",  # Cultural heritage
-            "ps1_esms_structure": "Environmental And Social Management Plan Esmp",
+            # IFC Performance Standards (PS1-PS8) - dedicated signatures
+            "PS1": "ps1",  # Assessment and Management of E&S Risks
+            "PS2": "ps2",  # Labor and Working Conditions
+            "PS3": "ps3",  # Resource Efficiency and Pollution Prevention
+            "PS4": "ps4",  # Community Health, Safety and Security
+            "PS5": "ps5",  # Land Acquisition and Involuntary Resettlement
+            "PS6": "ps6",  # Biodiversity Conservation
+            "PS7": "ps7",  # Indigenous Peoples
+            "PS8": "ps8",  # Cultural Heritage
+            "ps1_esms_structure": "ps1",
         }
 
         return mapping.get(normalized, normalized)
