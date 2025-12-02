@@ -23,6 +23,15 @@ from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
+# Load environment variables from root .env file
+try:
+    from dotenv import load_dotenv
+    # Load from workspace root: esia-workspace/.env
+    root_env = os.path.join(os.path.dirname(__file__), '..', '..', '..', '.env')
+    load_dotenv(root_env)
+except ImportError:
+    pass  # dotenv not required, use system env vars
+
 sys.path.append(os.getcwd())
 
 from src.esia_extractor import ESIAExtractor
