@@ -113,7 +113,7 @@ def extract_facts(chunks: List[Dict], verbose: bool = False) -> Dict[str, Any]:
             continue
 
         # Filter domains by confidence threshold (Phase 1 optimization)
-        CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.7"))
+        CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.5"))
         domain_matches_filtered = [m for m in domain_matches if m['confidence'] >= CONFIDENCE_THRESHOLD]
 
         if not domain_matches_filtered:

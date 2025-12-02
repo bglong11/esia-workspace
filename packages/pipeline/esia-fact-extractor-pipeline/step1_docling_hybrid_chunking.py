@@ -23,6 +23,7 @@ Usage:
 """
 
 import sys
+import os
 import io
 from pathlib import Path
 from dataclasses import dataclass, asdict
@@ -33,6 +34,11 @@ import json
 from tqdm import tqdm
 import tempfile
 import re
+
+# CRITICAL: Disable CUDA to avoid heap corruption on post-reboot systems
+# This prevents GPU initialization errors (exit code 3221225794)
+os.environ['CUDA_VISIBLE_DEVICES'] = ''
+os.environ['TORCH_DEVICE'] = 'cpu'
 
 # Configure UTF-8 output for Windows console
 if sys.stdout.encoding != 'utf-8':
@@ -89,7 +95,7 @@ class ImageData:
 class ProcessingConfig:
     """Configuration for document processing"""
     # GPU settings
-    use_gpu: str = 'auto'  # 'auto', 'cuda', 'cpu'
+    use_gpu: str = 'cpu'  # 'auto', 'cuda', 'cpu' - Set to 'cpu' to avoid GPU heap corruption issues post-reboot
 
     # Chunking settings
     chunk_max_tokens: int = 2500
