@@ -1139,6 +1139,53 @@ def build_html_gap_analysis(gaps: List[Dict]) -> str:
     return html
 
 
+def build_html_facts(facts: Dict) -> str:
+    """Build HTML facts section with all extracted facts."""
+    html = '<section id="facts">\n<h2>Extracted Facts</h2>\n'
+    html += '<table>\n<tr><th>Section</th><th>Domain</th><th>Field</th><th>Value</th><th>Page</th></tr>\n'
+
+    sections = facts.get('sections', {})
+    fact_count = 0
+
+    for section_name, section_data in sections.items():
+        extracted_facts = section_data.get('extracted_facts', {})
+
+        for domain, fields in extracted_facts.items():
+            for field_key, value in fields.items():
+                # Skip empty values
+                if not value or not value.strip():
+                    continue
+
+                # Clean field name: "project_overview_Project_Name" -> "Project Name"
+                parts = field_key.split('_')
+                field_name = ' '.join(parts[2:]) if len(parts) > 2 else field_key
+                field_name = field_name.replace('_', ' ')
+
+                # Extract page number from value "[Page X]"
+                page_match = re.search(r'\[Page\s*(\d+)\]', value)
+                page = page_match.group(1) if page_match else ''
+
+                # Clean value (remove page reference)
+                clean_value = re.sub(r'\s*\[Page\s*\d+\]', '', value).strip()
+
+                html += '<tr>'
+                html += f'<td>{escape_html(section_name)}</td>'
+                html += f'<td>{escape_html(domain)}</td>'
+                html += f'<td>{escape_html(field_name)}</td>'
+                html += f'<td>{escape_html(clean_value)}</td>'
+                html += f'<td>{escape_html(page)}</td>'
+                html += '</tr>\n'
+
+                fact_count += 1
+
+    if fact_count == 0:
+        html = '<section id="facts">\n<h2>Extracted Facts</h2>\n<p class="no-data">No facts extracted.</p>\n</section>\n'
+    else:
+        html += '</table>\n</section>\n'
+
+    return html
+
+
 def build_html_factsheet(output_path: Path, data: Dict) -> None:
     """Generate the complete HTML factsheet."""
     print("Generating HTML factsheet...")
@@ -1324,6 +1371,9 @@ def build_html_factsheet(output_path: Path, data: Dict) -> None:
 
     html += build_html_gap_analysis(data['gaps'])
     print("  Built gap analysis section")
+
+    html += build_html_facts(data['facts'])
+    print("  Built facts section")
 
     html += """
 </body>
