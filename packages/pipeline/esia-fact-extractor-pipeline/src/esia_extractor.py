@@ -110,6 +110,9 @@ class ESIAExtractor:
             # Resource efficiency mappings
             "resource_efficiency": "ps3",  # Maps to PS3: Resource Efficiency and Pollution Prevention
 
+            # Assessment and management mappings
+            "assessment_and_management": "ps1",  # Assessment and Management of E&S Risks (PS1)
+
             # Mining sector mappings
             "mining_extension": "mine_specific_impacts",
             "mining_nickel_extension": "nickel_specific_impacts",
