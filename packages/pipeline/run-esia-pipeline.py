@@ -389,8 +389,8 @@ data = {{
 }}
 
 base_name = Path('{pdf_stem}')
-excel_path = output_dir / f"{{base_name}}_ESIA_review.xlsx"
-html_path = output_dir / f"{{base_name}}_ESIA_review.html"
+excel_path = output_dir / f"{{base_name}}_review.xlsx"
+html_path = output_dir / f"{{base_name}}_review.html"
 
 generate_excel(excel_path, data)
 build_html_factsheet(html_path, data)

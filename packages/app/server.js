@@ -181,8 +181,6 @@ app.get('/api/download/:executionId', async (req, res) => {
       `${baseFilename}_facts.json`,
       `${baseFilename}_review.html`,
       `${baseFilename}_review.xlsx`,
-      `${baseFilename}_ESIA_review.xlsx`,
-      `${baseFilename}_ESIA_review.html`,
     ];
 
     // Add each file if it exists
