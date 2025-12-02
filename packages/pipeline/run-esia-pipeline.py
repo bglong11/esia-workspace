@@ -318,6 +318,104 @@ def run_analyzer(pdf_stem: str, logger: logging.Logger) -> None:
         raise
 
 
+def run_factsheet_generator(pdf_stem: str, logger: logging.Logger) -> None:
+    """
+    Step 4 (Optional): Generate ESIA review factsheet in Excel and HTML format.
+
+    Creates comprehensive Excel workbook and HTML dashboard from extracted facts.
+    Reads from unified ./data/outputs/, writes outputs there too.
+
+    Args:
+        pdf_stem: Sanitized PDF filename stem
+        logger: Logger instance for output
+    """
+    logger.info("=" * 70)
+    logger.info("STEP 4: Generating ESIA Review Factsheet")
+    logger.info("=" * 70)
+    logger.info(f"Input stem: {pdf_stem}")
+
+    facts_file = UNIFIED_OUTPUT_DIR / f"{pdf_stem}_facts.json"
+    meta_file = UNIFIED_OUTPUT_DIR / f"{pdf_stem}_meta.json"
+    chunks_file = UNIFIED_OUTPUT_DIR / f"{pdf_stem}_chunks.jsonl"
+
+    # Verify inputs exist
+    if not facts_file.exists():
+        logger.error(f"Facts file not found: {facts_file}")
+        raise FileNotFoundError(f"Facts file not found: {facts_file}")
+
+    if not meta_file.exists():
+        logger.error(f"Meta file not found: {meta_file}")
+        raise FileNotFoundError(f"Meta file not found: {meta_file}")
+
+    # Create a temporary Python script to run the factsheet generator
+    # This imports the module and executes it with the correct file paths
+    temp_script = f"""
+import sys
+sys.path.insert(0, '{ROOT}')
+
+from generate_esia_factsheet import load_inputs, build_project_summary, build_fact_categories
+from generate_esia_factsheet import check_consistency, check_unit_standardization, check_thresholds
+from generate_esia_factsheet import analyze_gaps, generate_excel, build_html_factsheet
+from pathlib import Path
+
+facts_path = Path('{facts_file}')
+meta_path = Path('{meta_file}')
+chunks_path = Path('{chunks_file}')
+output_dir = Path('{UNIFIED_OUTPUT_DIR}')
+
+facts, meta, chunks = load_inputs(facts_path, meta_path, chunks_path)
+
+if not facts:
+    print("Error: Could not load facts file.")
+    sys.exit(1)
+
+project_summary = build_project_summary(facts)
+categories = build_fact_categories(facts)
+consistency_issues = check_consistency(facts)
+unit_issues = check_unit_standardization(facts)
+threshold_checks = check_thresholds(meta, facts)
+gaps = analyze_gaps(facts)
+
+data = {{
+    'facts': facts,
+    'meta': meta,
+    'chunks': chunks,
+    'project_summary': project_summary,
+    'categories': categories,
+    'consistency_issues': consistency_issues,
+    'unit_issues': unit_issues,
+    'threshold_checks': threshold_checks,
+    'gaps': gaps,
+}}
+
+base_name = Path('{pdf_stem}')
+excel_path = output_dir / f"{{base_name}}_ESIA_review.xlsx"
+html_path = output_dir / f"{{base_name}}_ESIA_review.html"
+
+generate_excel(excel_path, data)
+build_html_factsheet(html_path, data)
+"""
+
+    cmd = [
+        "python",
+        "-c",
+        temp_script,
+    ]
+
+    logger.info(f"Generating factsheet for: {pdf_stem}")
+
+    try:
+        subprocess.run(
+            cmd,
+            check=True,
+            capture_output=False,
+        )
+        logger.info("SUCCESS - Factsheet generation completed successfully")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"FAILED - Factsheet generation failed with exit code {e.returncode}")
+        raise
+
+
 def run_pipeline(pdf_path: str, steps: List[int], logger: logging.Logger) -> None:
     """
     Execute the ESIA pipeline for specified steps.
@@ -355,6 +453,8 @@ def run_pipeline(pdf_path: str, steps: List[int], logger: logging.Logger) -> Non
 
         if 3 in steps:
             run_analyzer(pdf_stem, logger)
+            # Automatically generate factsheet after Step 3 completes
+            run_factsheet_generator(pdf_stem, logger)
 
         logger.info("=" * 70)
         logger.info("SUCCESS - ESIA Pipeline completed successfully!")
