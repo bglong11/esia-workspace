@@ -30,14 +30,19 @@ if not API_KEY:
 client = genai.Client(api_key=API_KEY)
 
 # Initialize OpenRouter Client
+# OpenRouter is compatible with OpenAI SDK, so we use that
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 openrouter_client = None
 if OPENROUTER_API_KEY:
     try:
-        from openrouter import OpenRouter
-        openrouter_client = OpenRouter(api_key=OPENROUTER_API_KEY)
+        from openai import OpenAI
+        # OpenRouter uses OpenAI-compatible API
+        openrouter_client = OpenAI(
+            api_key=OPENROUTER_API_KEY,
+            base_url="https://openrouter.ai/api/v1"
+        )
     except ImportError:
-        print("OpenRouter package not installed. Install with `pip install openrouter`")
+        print("OpenAI package not installed. Install with `pip install openai`")
 
 
 # ============================================================================

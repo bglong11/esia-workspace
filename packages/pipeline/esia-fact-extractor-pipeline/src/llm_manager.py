@@ -153,15 +153,16 @@ class LLMManager:
     def _generate_openrouter(self, prompt, model, system_instruction=None, **kwargs):
         if not self.openrouter_client:
              raise ValueError("OpenRouter client is not initialized. Check OPENROUTER_API_KEY in .env")
-        
+
         messages = []
         if system_instruction:
             messages.append({"role": "system", "content": system_instruction})
-        
+
         messages.append({"role": "user", "content": prompt})
-        
-        # OpenRouter SDK usage
-        response = self.openrouter_client.chat.send(
+
+        # OpenRouter is compatible with OpenAI SDK
+        # Use chat.completions.create() which is the standard OpenAI method
+        response = self.openrouter_client.chat.completions.create(
             model=model,
             messages=messages,
             **kwargs
