@@ -864,6 +864,50 @@ def build_gap_analysis_sheet(ws, gaps: List[Dict]) -> None:
         ws.column_dimensions[get_column_letter(i)].width = width
 
 
+def build_facts_sheet(ws, facts: Dict) -> None:
+    """Build the Facts sheet with all extracted facts."""
+    headers = ["Section", "Domain", "Field", "Value", "Page"]
+    ws.append(headers)
+    apply_header_style(ws, 1, len(headers))
+
+    sections = facts.get('sections', {})
+    for section_name, section_data in sections.items():
+        extracted_facts = section_data.get('extracted_facts', {})
+
+        for domain, fields in extracted_facts.items():
+            for field_key, value in fields.items():
+                # Skip empty values
+                if not value or not value.strip():
+                    continue
+
+                # Clean field name: "project_overview_Project_Name" -> "Project Name"
+                parts = field_key.split('_')
+                # Find where the actual field name starts (after subsection prefix)
+                field_name = ' '.join(parts[2:]) if len(parts) > 2 else field_key
+                field_name = field_name.replace('_', ' ')
+
+                # Extract page number from value "[Page X]"
+                page_match = re.search(r'\[Page\s*(\d+)\]', value)
+                page = page_match.group(1) if page_match else ''
+
+                # Clean value (remove page reference)
+                clean_value = re.sub(r'\s*\[Page\s*\d+\]', '', value).strip()
+
+                ws.append([section_name, domain, field_name, clean_value, page])
+
+    # Column widths
+    ws.column_dimensions['A'].width = 30  # Section
+    ws.column_dimensions['B'].width = 25  # Domain
+    ws.column_dimensions['C'].width = 35  # Field
+    ws.column_dimensions['D'].width = 80  # Value
+    ws.column_dimensions['E'].width = 8   # Page
+
+    # Wrap text in Value column
+    for row in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=4, max_col=4):
+        for cell in row:
+            cell.alignment = Alignment(wrap_text=True, vertical='top')
+
+
 def generate_excel(output_path: Path, data: Dict) -> None:
     """Generate the complete Excel workbook."""
     print("Generating Excel workbook...")
@@ -905,6 +949,11 @@ def generate_excel(output_path: Path, data: Dict) -> None:
     ws_gaps = wb.create_sheet("Gap Analysis")
     build_gap_analysis_sheet(ws_gaps, data['gaps'])
     print("  Built Gap Analysis sheet")
+
+    # Facts sheet
+    ws_facts = wb.create_sheet("Facts")
+    build_facts_sheet(ws_facts, data['facts'])
+    print("  Built Facts sheet")
 
     # Save workbook
     wb.save(output_path)
