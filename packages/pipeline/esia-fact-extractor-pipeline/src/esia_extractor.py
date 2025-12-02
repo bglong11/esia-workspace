@@ -102,9 +102,13 @@ class ESIAExtractor:
             "energy_wind_solar_extension": "solar_specific_impacts",  # Maps to solar for now
             "energy_floating_solar": "solar_specific_impacts",
             "energy_geothermal_extension": "geothermal_specific_impacts",
+            "energy_oil_gas": "hydrocarbon_management",  # Oil & gas projects
             "energy_oil_gas_extension": "hydrocarbon_management",
             "energy_pumped_storage_extension": "pumped_storage_hydropower_specific_impacts",
             "energy_transmission": "transmission_line_specific_impacts",
+
+            # Resource efficiency mappings
+            "resource_efficiency": "ps3",  # Maps to PS3: Resource Efficiency and Pollution Prevention
 
             # Mining sector mappings
             "mining_extension": "mine_specific_impacts",

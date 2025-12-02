@@ -11,13 +11,29 @@ from .reviewer import ESIAReviewer
 
 
 def _load_env_file():
-    """Load environment variables from .env file if it exists."""
-    env_path = Path.cwd() / '.env'
-    if not env_path.exists():
-        # Also check parent directory
-        env_path = Path(__file__).parent.parent / '.env'
+    """Load environment variables from .env or .env.local file if it exists."""
+    # Prioritized list of paths to check
+    # 1. Workspace root .env.local (main config file)
+    # 2. Workspace root .env
+    # 3. Current working directory
+    # 4. Package parent directory
+    workspace_root = Path(__file__).parent.parent.parent.parent.parent  # esia-fact-analyzer -> pipeline -> packages -> esia-workspace
 
-    if env_path.exists():
+    paths_to_check = [
+        workspace_root / '.env.local',  # Primary: workspace root .env.local
+        workspace_root / '.env',         # Secondary: workspace root .env
+        Path.cwd() / '.env.local',
+        Path.cwd() / '.env',
+        Path(__file__).parent.parent / '.env',
+    ]
+
+    env_path = None
+    for p in paths_to_check:
+        if p.exists():
+            env_path = p
+            break
+
+    if env_path and env_path.exists():
         try:
             with open(env_path, 'r') as f:
                 for line in f:
