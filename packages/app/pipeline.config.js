@@ -19,35 +19,36 @@ export const pipelineConfig = {
   // ESIA Pipeline folder location
   pipelineFolder: '../pipeline',
 
-  // Main pipeline script - Step 1: Docling Hybrid Chunking
-  // This orchestrates the complete 3-step ESIA pipeline:
-  // 1. Chunk PDF into semantic chunks with page tracking (step1_docling_hybrid_chunking.py)
-  // 2. Extract domain-specific facts using archetype-based extraction (step3_extraction_with_archetypes.py)
-  // 3. Analyze extracted facts for consistency and compliance (esia-fact-analyzer/analyze_esia_v2.py)
+  // Main pipeline orchestrator
+  // This runs the complete 4-step ESIA pipeline:
+  // 1. Chunk PDF into semantic chunks with page tracking
+  // 2. Extract domain-specific facts using archetype-based mapping
+  // 3. Analyze extracted facts for consistency and compliance
+  // 4. Generate comprehensive ESIA review factsheet (automatic after Step 3)
   steps: [
     {
       id: 'step1_chunking',
       name: 'Step 1: Document Chunking',
       description: 'Converting PDF to semantic chunks with page tracking using Docling...',
-      script: 'step1_docling_hybrid_chunking.py',
-      args: ['{PDF_FILE}', '-o', '../data/outputs'],
+      script: '../run-esia-pipeline.py',
+      args: ['{PDF_FILE}', '--steps', '1'],
       timeout: 600000, // 10 minutes for chunking
     },
     {
       id: 'step2_extraction',
       name: 'Step 2: Fact Extraction',
       description: 'Extracting domain-specific facts using archetype-based mapping...',
-      script: 'step3_extraction_with_archetypes.py',
-      args: ['--chunks', '../data/outputs/{PDF_ROOT}_chunks.jsonl', '--output', '../data/outputs/{PDF_ROOT}_facts.json'],
+      script: '../run-esia-pipeline.py',
+      args: ['{PDF_FILE}', '--steps', '2'],
       timeout: 14400000, // 4 hours for extraction (large documents with LLM calls)
     },
     {
       id: 'step3_analysis',
-      name: 'Step 3: Fact Analysis',
-      description: 'Analyzing facts for consistency, compliance, and generating reports...',
-      script: '../esia-fact-analyzer/analyze_esia_v2.py',
-      args: ['--input-dir', '../data/outputs', '--output-dir', '../data/outputs'],
-      timeout: 300000, // 5 minutes for analysis
+      name: 'Step 3: Fact Analysis & Factsheet Generation',
+      description: 'Analyzing facts for consistency, compliance, and generating comprehensive reports...',
+      script: '../run-esia-pipeline.py',
+      args: ['{PDF_FILE}', '--steps', '3'],
+      timeout: 600000, // 10 minutes for analysis + factsheet generation
     },
   ],
 
