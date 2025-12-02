@@ -77,6 +77,10 @@ function executeStep(step, pdfFilename, sanitizedName, uploadedFilePath, executi
           SANITIZED_NAME: sanitizedName,
           ROOT_NAME: sanitizedName.replace(/\.[^/.]+$/, ''),
           OUTPUT_DIR: outputDir,
+          // CRITICAL: Disable CUDA to avoid heap corruption on post-reboot systems
+          // This prevents GPU initialization errors (exit code 3221225794)
+          CUDA_VISIBLE_DEVICES: '',
+          TORCH_DEVICE: 'cpu',
         },
       });
 
