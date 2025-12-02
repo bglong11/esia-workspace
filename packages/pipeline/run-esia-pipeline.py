@@ -349,19 +349,26 @@ def run_factsheet_generator(pdf_stem: str, logger: logging.Logger) -> None:
 
     # Create a temporary Python script to run the factsheet generator
     # This imports the module and executes it with the correct file paths
+    # Convert paths to use forward slashes to avoid Windows backslash escape sequence issues
+    root_path = str(ROOT).replace('\\', '/')
+    facts_path_str = str(facts_file).replace('\\', '/')
+    meta_path_str = str(meta_file).replace('\\', '/')
+    chunks_path_str = str(chunks_file).replace('\\', '/')
+    output_dir_str = str(UNIFIED_OUTPUT_DIR).replace('\\', '/')
+
     temp_script = f"""
 import sys
-sys.path.insert(0, '{ROOT}')
+sys.path.insert(0, '{root_path}')
 
 from generate_esia_factsheet import load_inputs, build_project_summary, build_fact_categories
 from generate_esia_factsheet import check_consistency, check_unit_standardization, check_thresholds
 from generate_esia_factsheet import analyze_gaps, generate_excel, build_html_factsheet
 from pathlib import Path
 
-facts_path = Path('{facts_file}')
-meta_path = Path('{meta_file}')
-chunks_path = Path('{chunks_file}')
-output_dir = Path('{UNIFIED_OUTPUT_DIR}')
+facts_path = Path('{facts_path_str}')
+meta_path = Path('{meta_path_str}')
+chunks_path = Path('{chunks_path_str}')
+output_dir = Path('{output_dir_str}')
 
 facts, meta, chunks = load_inputs(facts_path, meta_path, chunks_path)
 
