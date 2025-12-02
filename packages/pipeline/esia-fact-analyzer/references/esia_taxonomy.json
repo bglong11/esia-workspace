@@ -1,0 +1,51 @@
+{
+  "description": "ESIA document structure and fact categories taxonomy",
+  "sections": {
+    "executive_summary": {
+      "category": "Overview",
+      "description": "High-level project summary and key findings"
+    },
+    "introduction": {
+      "category": "Context",
+      "description": "Project context and background information"
+    },
+    "project_description": {
+      "category": "Technical",
+      "description": "Detailed project description and components"
+    },
+    "baseline_conditions": {
+      "category": "Environmental/Social",
+      "description": "Existing conditions before project"
+    },
+    "environmental_and_social_impact_assessment": {
+      "category": "Impacts",
+      "description": "Potential environmental and social impacts"
+    },
+    "mitigation_and_enhancement_measures": {
+      "category": "Management",
+      "description": "Mitigation and enhancement strategies"
+    },
+    "environmental_and_social_management_plan_esmp": {
+      "category": "Management",
+      "description": "ESMP implementation plan"
+    },
+    "public_consultation_and_disclosure": {
+      "category": "Engagement",
+      "description": "Stakeholder engagement activities"
+    },
+    "conclusion_and_recommendations": {
+      "category": "Summary",
+      "description": "Overall conclusions and recommendations"
+    }
+  },
+  "performance_standards": [
+    "ps1_assessment_and_management",
+    "ps2_labor_and_working_conditions",
+    "ps3_resource_efficiency_and_pollution_prevention",
+    "ps4_community_health_safety_and_security",
+    "ps5_land_acquisition_and_involuntary_resettlement",
+    "ps6_biodiversity_conservation_and_sustainable_natural_resource_management",
+    "ps7_indigenous_peoples",
+    "ps8_cultural_heritage"
+  ]
+}

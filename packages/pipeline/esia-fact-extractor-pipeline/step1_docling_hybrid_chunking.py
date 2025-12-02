@@ -107,7 +107,7 @@ class ProcessingConfig:
     enable_images: bool = False
 
     # Translation settings (NEW)
-    translate_to_english: bool = False
+    translate_to_english: bool = True
     translation_provider: str = 'google'  # 'google', 'libretranslate'
 
     # Output settings

@@ -1,0 +1,36 @@
+{
+  "description": "IFC Performance Standard thresholds and compliance limits",
+  "ps1_thresholds": {
+    "environmental_social_management_plan": "Required",
+    "e_s_risks_assessment": "Mandatory"
+  },
+  "ps2_thresholds": {
+    "minimum_wage": "National legal minimum",
+    "working_hours": "Maximum 48 hours/week",
+    "child_labor": "Zero tolerance"
+  },
+  "ps3_thresholds": {
+    "energy_efficiency": "Cost-effective measures",
+    "pollution_prevention": "Best available technology"
+  },
+  "ps4_thresholds": {
+    "community_safety": "Risk assessment required",
+    "security_personnel": "Trained and accountable"
+  },
+  "ps5_thresholds": {
+    "land_acquisition": "Free, prior and informed consent",
+    "resettlement": "Better off than before displacement"
+  },
+  "ps6_thresholds": {
+    "biodiversity": "No net loss principle",
+    "habitat": "Avoid, minimize, restore"
+  },
+  "ps7_thresholds": {
+    "indigenous_peoples": "Free, prior and informed consent",
+    "cultural_rights": "Protected and respected"
+  },
+  "ps8_thresholds": {
+    "cultural_heritage": "Preservation and protection",
+    "archaeological": "Avoid damage"
+  }
+}

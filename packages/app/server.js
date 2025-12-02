@@ -172,16 +172,17 @@ app.get('/api/download/:executionId', async (req, res) => {
     const outputDir = path.resolve(__dirname, '../pipeline/data/outputs');
 
     // Add all output files for this execution
-    // Use sanitizedName since that's what the pipeline uses for output files
-    const baseFilename = execution.sanitizedName;
+    // The pipeline uses pdfFilename (with timestamp) as the base for output files
+    // Extract the base name: remove extension from pdfFilename
+    const pdfBase = execution.pdfFilename.replace(/\.[^/.]+$/, '');
 
     // List of expected output files
     const outputFiles = [
-      `${baseFilename}_chunks.jsonl`,
-      `${baseFilename}_meta.json`,
-      `${baseFilename}_facts.json`,
-      `${baseFilename}_review.html`,
-      `${baseFilename}_review.xlsx`,
+      `${pdfBase}_chunks.jsonl`,
+      `${pdfBase}_meta.json`,
+      `${pdfBase}_facts.json`,
+      `${pdfBase}_review.html`,
+      `${pdfBase}_review.xlsx`,
     ];
 
     // Add each file if it exists

@@ -1,0 +1,49 @@
+{
+  "description": "Reviewer checklists for ESIA quality assurance",
+  "document_completeness": [
+    "Executive summary present",
+    "Project description complete",
+    "Baseline conditions documented",
+    "Impact assessment conducted",
+    "Mitigation measures identified",
+    "ESMP plan included",
+    "Stakeholder consultation completed",
+    "Conclusions and recommendations provided"
+  ],
+  "technical_quality": [
+    "Methodology clearly described",
+    "Data sources cited",
+    "Assumptions stated",
+    "Limitations acknowledged",
+    "Scientific rigor appropriate",
+    "Calculations verified"
+  ],
+  "environmental_social_quality": [
+    "All relevant impacts identified",
+    "Magnitude of impacts assessed",
+    "Significance of impacts rated",
+    "Cumulative impacts considered",
+    "Vulnerable groups identified",
+    "Gender considerations included"
+  ],
+  "ifc_compliance": [
+    "PS1: E&S risk assessment adequate",
+    "PS2: Labor standards addressed",
+    "PS3: Resource efficiency considered",
+    "PS4: Community safety planned",
+    "PS5: Land acquisition compliant",
+    "PS6: Biodiversity protected",
+    "PS7: Indigenous peoples consulted",
+    "PS8: Cultural heritage respected"
+  ],
+  "management_plan_quality": [
+    "Responsibilities assigned",
+    "Timeline realistic",
+    "Budget adequate",
+    "Monitoring plan in place",
+    "Reporting requirements clear",
+    "Capacity assessment done",
+    "Training needs identified",
+    "Grievance mechanism established"
+  ]
+}
