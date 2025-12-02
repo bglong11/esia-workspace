@@ -58,44 +58,114 @@ UNIT_CONVERSIONS = {
     'sq m': {'base': 'sq m', 'factor': 1},
     'sqm': {'base': 'sq m', 'factor': 1},
     'acres': {'base': 'sq m', 'factor': 4046.86},
+    'acre': {'base': 'sq m', 'factor': 4046.86},
+    'sq km': {'base': 'sq m', 'factor': 1000000},
+    'sq ft': {'base': 'sq m', 'factor': 0.092903},
+    'ft²': {'base': 'sq m', 'factor': 0.092903},
+    'sq mile': {'base': 'sq m', 'factor': 2589988.11},
 
     # Length units -> meters
     'km': {'base': 'm', 'factor': 1000},
+    'kilometer': {'base': 'm', 'factor': 1000},
     'kilometers': {'base': 'm', 'factor': 1000},
     'm': {'base': 'm', 'factor': 1},
+    'meter': {'base': 'm', 'factor': 1},
     'meters': {'base': 'm', 'factor': 1},
+    'cm': {'base': 'm', 'factor': 0.01},
+    'mm': {'base': 'm', 'factor': 0.001},
+    'ft': {'base': 'm', 'factor': 0.3048},
+    'feet': {'base': 'm', 'factor': 0.3048},
+    'mile': {'base': 'm', 'factor': 1609.34},
 
     # Volume units -> liters
     'ML': {'base': 'L', 'factor': 1000000},
+    'Megalitre': {'base': 'L', 'factor': 1000000},
     'kL': {'base': 'L', 'factor': 1000},
+    'KL': {'base': 'L', 'factor': 1000},
     'L': {'base': 'L', 'factor': 1},
+    'litre': {'base': 'L', 'factor': 1},
+    'litres': {'base': 'L', 'factor': 1},
     'm³': {'base': 'L', 'factor': 1000},
     'm3': {'base': 'L', 'factor': 1000},
+    'cubic meter': {'base': 'L', 'factor': 1000},
+    'cubic metres': {'base': 'L', 'factor': 1000},
+    'gal': {'base': 'L', 'factor': 3.78541},
+    'gallon': {'base': 'L', 'factor': 3.78541},
 
     # Mass/emissions -> tonnes
     'tCO2e': {'base': 't', 'factor': 1},
     't': {'base': 't', 'factor': 1},
+    'tonne': {'base': 't', 'factor': 1},
     'tonnes': {'base': 't', 'factor': 1},
     'kt': {'base': 't', 'factor': 1000},
     'Mt': {'base': 't', 'factor': 1000000},
+    'kg': {'base': 't', 'factor': 0.001},
+    'g': {'base': 't', 'factor': 0.000001},
+    'lb': {'base': 't', 'factor': 0.000453592},
 
-    # Concentration units
+    # Water / air concentration units
     'mg/L': {'base': 'mg/L', 'factor': 1},
+    'µg/L': {'base': 'mg/L', 'factor': 0.001},
+    'ug/L': {'base': 'mg/L', 'factor': 0.001},
+    'ng/L': {'base': 'mg/L', 'factor': 0.000001},
     'µg/m³': {'base': 'µg/m³', 'factor': 1},
     'ug/m3': {'base': 'µg/m³', 'factor': 1},
     'mg/m³': {'base': 'µg/m³', 'factor': 1000},
+    'ppm': {'base': 'mg/L', 'factor': 1},     # water (approx.)
+    'ppb': {'base': 'mg/L', 'factor': 0.001},
+
+    # Soil / sediment concentration -> mg/kg
+    'mg/kg': {'base': 'mg/kg', 'factor': 1},
+    'mg/kg dw': {'base': 'mg/kg', 'factor': 1},
+    'mg/kg-dw': {'base': 'mg/kg', 'factor': 1},
+    'µg/kg': {'base': 'mg/kg', 'factor': 0.001},
+    'ug/kg': {'base': 'mg/kg', 'factor': 0.001},
+    'ng/kg': {'base': 'mg/kg', 'factor': 0.000001},
+
+    # Flow -> L/s
+    'L/s': {'base': 'L/s', 'factor': 1},
+    'Lps': {'base': 'L/s', 'factor': 1},
+    'm³/s': {'base': 'L/s', 'factor': 1000},
+    'm3/s': {'base': 'L/s', 'factor': 1000},
+    'ML/d': {'base': 'L/s', 'factor': 11.574},
+    'L/min': {'base': 'L/s', 'factor': 1/60},
+    'L/hr': {'base': 'L/s', 'factor': 1/3600},
+
+    # Hydrology – rainfall / intensity
+    'mm/d': {'base': 'mm/d', 'factor': 1},
+    'mm/day': {'base': 'mm/d', 'factor': 1},
+    'mm/yr': {'base': 'mm/d', 'factor': 1/365},
+    'mm/year': {'base': 'mm/d', 'factor': 1/365},
 
     # Power
     'MW': {'base': 'MW', 'factor': 1},
     'GW': {'base': 'MW', 'factor': 1000},
     'kW': {'base': 'MW', 'factor': 0.001},
+    'W': {'base': 'MW', 'factor': 0.000001},
+
+    # Energy -> MJ
+    'GJ': {'base': 'MJ', 'factor': 1000},
+    'MJ': {'base': 'MJ', 'factor': 1},
+    'kJ': {'base': 'MJ', 'factor': 0.001},
+    'MWh': {'base': 'MJ', 'factor': 3600},
+    'kWh': {'base': 'MJ', 'factor': 3.6},
 
     # People
     'people': {'base': 'people', 'factor': 1},
     'persons': {'base': 'people', 'factor': 1},
     'workers': {'base': 'people', 'factor': 1},
     'employees': {'base': 'people', 'factor': 1},
+
+    # Biodiversity – counts
+    'species': {'base': 'species', 'factor': 1},
+    'species_count': {'base': 'species', 'factor': 1},
+    'individuals': {'base': 'individuals', 'factor': 1},
+    'trees': {'base': 'individuals', 'factor': 1},
+    'birds': {'base': 'individuals', 'factor': 1},
+    'fauna': {'base': 'individuals', 'factor': 1},
+    'flora': {'base': 'individuals', 'factor': 1},
 }
+
 
 # Parameter context patterns for like-for-like comparison
 PARAMETER_CONTEXTS = {
