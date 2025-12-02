@@ -13,7 +13,11 @@ The ESIA pipeline processes ESIA documents through multiple steps:
 All output files are stored in a single directory and named with a consistent pattern.
 
 ---
+## Input pdf Directory
+**Location:** `packages/app/data/pdf/`
+**Full Path:** `M:\GitHub\esia-workspace\packages\app\data\pdf\`
 
+---
 ## Output Directory
 
 **Location:** `packages/pipeline/data/outputs/`
