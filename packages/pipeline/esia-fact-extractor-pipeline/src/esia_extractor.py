@@ -152,7 +152,7 @@ class ESIAExtractor:
             model: Model name (defaults to value from .env.local based on provider)
             provider: Provider name (defaults to LLM_PROVIDER from .env.local)
         """
-        from src.config import LLM_PROVIDER, GOOGLE_MODEL, OPENROUTER_MODEL, XAI_MODEL
+        from src.config import LLM_PROVIDER, GOOGLE_MODEL, OPENAI_MODEL, OPENROUTER_MODEL, XAI_MODEL
 
         # Use config defaults if not provided
         self.provider = provider or LLM_PROVIDER
@@ -161,6 +161,8 @@ class ESIAExtractor:
         if model is None:
             if self.provider == "google":
                 self.model = GOOGLE_MODEL
+            elif self.provider == "openai":
+                self.model = OPENAI_MODEL
             elif self.provider == "xai":
                 self.model = XAI_MODEL
             else:

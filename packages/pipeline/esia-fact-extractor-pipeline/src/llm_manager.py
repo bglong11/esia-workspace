@@ -1,5 +1,5 @@
 
-from src.config import client as google_client, openrouter_client, xai_client
+from src.config import client as google_client, openrouter_client, xai_client, openai_client
 from src.config import MAX_RETRIES, INITIAL_RETRY_DELAY, RETRY_BACKOFF_MULTIPLIER
 from google import genai
 import os
@@ -78,15 +78,16 @@ class LLMManager:
         self.google_client = google_client
         self.openrouter_client = openrouter_client
         self.xai_client = xai_client
+        self.openai_client = openai_client
 
     def generate_content(self, prompt: str, model: str = "gemini-2.5-flash", provider: str = None, system_instruction: str = None, **kwargs):
         """
         Generates content using the specified model and provider.
-        
+
         Args:
             prompt: The input prompt.
-            model: The model name (e.g., "gemini-2.5-flash", "anthropic/claude-3-opus").
-            provider: "google" or "openrouter". If None, infers from model name.
+            model: The model name (e.g., "gemini-2.5-flash", "gpt-4o-mini", "grok-3-mini").
+            provider: "google", "openai", "openrouter", or "xai". If None, infers from model name.
             system_instruction: Optional system instruction.
             **kwargs: Additional arguments passed to the API.
         """
@@ -94,6 +95,8 @@ class LLMManager:
             # Auto-detect provider from model name
             if model.startswith("gemini"):
                 provider = "google"
+            elif model.startswith("gpt"):
+                provider = "openai"
             elif model.startswith("grok"):
                 provider = "xai"
             else:
@@ -103,6 +106,8 @@ class LLMManager:
 
         if provider == "google":
             return self._generate_google(prompt, model, system_instruction=system_instruction, **kwargs)
+        elif provider == "openai":
+            return self._generate_openai(prompt, model, system_instruction=system_instruction, **kwargs)
         elif provider == "openrouter":
             return self._generate_openrouter(prompt, model, system_instruction=system_instruction, **kwargs)
         elif provider == "xai":
@@ -187,6 +192,25 @@ class LLMManager:
 
         # xAI is OpenAI-compatible
         response = self.xai_client.chat.completions.create(
+            model=model,
+            messages=messages,
+            **kwargs
+        )
+        return response
+
+    def _generate_openai(self, prompt, model, system_instruction=None, **kwargs):
+        """Generate content using native OpenAI API."""
+        if not self.openai_client:
+            raise ValueError("OpenAI client not initialized. Check OPENAI_API_KEY in .env")
+
+        messages = []
+        if system_instruction:
+            messages.append({"role": "system", "content": system_instruction})
+
+        messages.append({"role": "user", "content": prompt})
+
+        # Native OpenAI API
+        response = self.openai_client.chat.completions.create(
             model=model,
             messages=messages,
             **kwargs

@@ -59,6 +59,17 @@ if XAI_API_KEY:
     except ImportError:
         print("OpenAI package not installed. Install with `pip install openai`")
 
+# Initialize OpenAI Native Client
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+openai_client = None
+if OPENAI_API_KEY:
+    try:
+        from openai import OpenAI
+        # Native OpenAI API
+        openai_client = OpenAI(api_key=OPENAI_API_KEY)
+    except ImportError:
+        print("OpenAI package not installed. Install with `pip install openai`")
+
 
 # ============================================================================
 # LLM Configuration from .env.local
@@ -67,6 +78,7 @@ if XAI_API_KEY:
 # LLM Provider and Models (configured in .env.local)
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "google")
 GOOGLE_MODEL = os.getenv("GOOGLE_MODEL", "gemini-2.5-flash")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-2.5-flash")
 XAI_MODEL = os.getenv("XAI_MODEL", "grok-3-mini")
 LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.3"))

@@ -18,7 +18,7 @@ extractor_src = pipeline_root / "esia-fact-extractor-pipeline" / "src"
 sys.path.insert(0, str(extractor_src))
 
 from llm_manager import LLMManager
-from config import LLM_PROVIDER, GOOGLE_MODEL, OPENROUTER_MODEL, XAI_MODEL
+from config import LLM_PROVIDER, GOOGLE_MODEL, OPENAI_MODEL, OPENROUTER_MODEL, XAI_MODEL
 
 from .templates import generate_static_summary
 
@@ -82,12 +82,14 @@ class FactsheetGenerator:
         self.max_tokens = self.config['max_tokens']
         self.temperature = self.config['temperature']
 
-        # Initialize LLMManager (supports Google, OpenRouter, xAI)
+        # Initialize LLMManager (supports Google, OpenAI, OpenRouter, xAI)
         self.llm_manager = LLMManager()
 
         # Get model based on configured provider
         if LLM_PROVIDER == "google":
             self.model = GOOGLE_MODEL
+        elif LLM_PROVIDER == "openai":
+            self.model = OPENAI_MODEL
         elif LLM_PROVIDER == "xai":
             self.model = XAI_MODEL
         else:

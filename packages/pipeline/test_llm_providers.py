@@ -11,7 +11,7 @@ sys.path.insert(0, str(extractor_root))
 sys.path.insert(0, str(extractor_root / "src"))
 
 from src.llm_manager import LLMManager
-from src.config import LLM_PROVIDER, GOOGLE_MODEL, OPENROUTER_MODEL, XAI_MODEL
+from src.config import LLM_PROVIDER, GOOGLE_MODEL, OPENAI_MODEL, OPENROUTER_MODEL, XAI_MODEL
 
 def test_provider(provider_name, model):
     """Test a specific LLM provider."""
@@ -58,6 +58,14 @@ def main():
     else:
         print(f"\n{'='*60}")
         print("Google Provider: SKIPPED (no GOOGLE_API_KEY)")
+        print(f"{'='*60}")
+
+    # Test OpenAI (if API key present)
+    if os.getenv("OPENAI_API_KEY"):
+        results['openai'] = test_provider("openai", OPENAI_MODEL)
+    else:
+        print(f"\n{'='*60}")
+        print("OpenAI Provider: SKIPPED (no OPENAI_API_KEY)")
         print(f"{'='*60}")
 
     # Test OpenRouter (if API key present)
