@@ -1,5 +1,5 @@
 
-from src.config import client as google_client, openrouter_client
+from src.config import client as google_client, openrouter_client, xai_client
 from src.config import MAX_RETRIES, INITIAL_RETRY_DELAY, RETRY_BACKOFF_MULTIPLIER
 from google import genai
 import os
@@ -77,6 +77,7 @@ class LLMManager:
     def __init__(self):
         self.google_client = google_client
         self.openrouter_client = openrouter_client
+        self.xai_client = xai_client
 
     def generate_content(self, prompt: str, model: str = "gemini-2.5-flash", provider: str = None, system_instruction: str = None, **kwargs):
         """
@@ -90,11 +91,13 @@ class LLMManager:
             **kwargs: Additional arguments passed to the API.
         """
         if provider is None:
-            # Simple heuristic: if it looks like a google model, use google, else openrouter
+            # Auto-detect provider from model name
             if model.startswith("gemini"):
-                 provider = "google"
+                provider = "google"
+            elif model.startswith("grok"):
+                provider = "xai"
             else:
-                 provider = "openrouter"
+                provider = "openrouter"
 
         print(f"Using provider: {provider} for model: {model}")
 
@@ -102,6 +105,8 @@ class LLMManager:
             return self._generate_google(prompt, model, system_instruction=system_instruction, **kwargs)
         elif provider == "openrouter":
             return self._generate_openrouter(prompt, model, system_instruction=system_instruction, **kwargs)
+        elif provider == "xai":
+            return self._generate_xai(prompt, model, system_instruction=system_instruction, **kwargs)
         else:
             raise ValueError(f"Unknown provider: {provider}")
 
@@ -163,6 +168,25 @@ class LLMManager:
         # OpenRouter is compatible with OpenAI SDK
         # Use chat.completions.create() which is the standard OpenAI method
         response = self.openrouter_client.chat.completions.create(
+            model=model,
+            messages=messages,
+            **kwargs
+        )
+        return response
+
+    def _generate_xai(self, prompt, model, system_instruction=None, **kwargs):
+        """Generate content using xAI (Grok) API."""
+        if not self.xai_client:
+            raise ValueError("xAI client not initialized. Check XAI_API_KEY in .env")
+
+        messages = []
+        if system_instruction:
+            messages.append({"role": "system", "content": system_instruction})
+
+        messages.append({"role": "user", "content": prompt})
+
+        # xAI is OpenAI-compatible
+        response = self.xai_client.chat.completions.create(
             model=model,
             messages=messages,
             **kwargs

@@ -17,11 +17,13 @@ Filename sanitization happens first and is used consistently throughout.
 Usage:
     python run-esia-pipeline.py <pdf_file>                    # Run all steps
     python run-esia-pipeline.py <pdf_file> --steps 1,3        # Run specific steps
+    python run-esia-pipeline.py <pdf_file> --use-cuda         # Use GPU for Step 1
     python run-esia-pipeline.py --help                        # Show help
 
 Examples:
     python run-esia-pipeline.py data/pdfs/ESIA_Report.pdf
     python run-esia-pipeline.py "Project XYZ (Draft).pdf" --steps 1,2
+    python run-esia-pipeline.py report.pdf --use-cuda --verbose
 """
 
 import argparse
@@ -150,7 +152,7 @@ def validate_pdf_file(pdf_path: str, logger: logging.Logger) -> Path:
     return path
 
 
-def run_chunking(pdf_path: str, pdf_stem: str, logger: logging.Logger) -> None:
+def run_chunking(pdf_path: str, pdf_stem: str, logger: logging.Logger, use_cuda: bool = False) -> None:
     """
     Step 1: Run document chunking with Docling.
 
@@ -161,22 +163,25 @@ def run_chunking(pdf_path: str, pdf_stem: str, logger: logging.Logger) -> None:
         pdf_path: Full path to PDF file
         pdf_stem: Sanitized PDF filename stem
         logger: Logger instance for output
+        use_cuda: Whether to use CUDA GPU acceleration (default: False)
     """
     logger.info("=" * 70)
     logger.info("STEP 1: Running Document Chunking")
     logger.info("=" * 70)
     logger.info(f"Input:  {pdf_path}")
     logger.info(f"Output stem: {pdf_stem}")
+    logger.info(f"GPU Mode: {'CUDA' if use_cuda else 'CPU'}")
 
     # Convert to absolute path since step1 runs from different working directory
     pdf_path_abs = str(Path(pdf_path).absolute())
 
+    gpu_mode = "cuda" if use_cuda else "cpu"
     cmd = [
         "python",
         "step1_docling_hybrid_chunking.py",
         pdf_path_abs,
         "--output-dir", str(UNIFIED_OUTPUT_DIR),
-        "--gpu-mode", "cpu",
+        "--gpu-mode", gpu_mode,
     ]
 
     logger.info(f"Command: {' '.join(cmd)}")
@@ -423,7 +428,7 @@ build_html_factsheet(html_path, data)
         raise
 
 
-def run_pipeline(pdf_path: str, steps: List[int], logger: logging.Logger) -> None:
+def run_pipeline(pdf_path: str, steps: List[int], logger: logging.Logger, use_cuda: bool = False) -> None:
     """
     Execute the ESIA pipeline for specified steps.
 
@@ -436,6 +441,7 @@ def run_pipeline(pdf_path: str, steps: List[int], logger: logging.Logger) -> Non
         pdf_path: Path to the PDF/DOCX file
         steps: List of step numbers to execute (1, 2, or 3)
         logger: Logger instance for output
+        use_cuda: Whether to use CUDA GPU acceleration for Step 1 (default: False)
     """
     logger.info("ESIA Pipeline Starting")
     logger.info(f"Input file: {pdf_path}")
@@ -453,7 +459,7 @@ def run_pipeline(pdf_path: str, steps: List[int], logger: logging.Logger) -> Non
 
         # Execute requested steps
         if 1 in steps:
-            run_chunking(pdf_path, pdf_stem, logger)
+            run_chunking(pdf_path, pdf_stem, logger, use_cuda)
 
         if 2 in steps:
             run_fact_extraction(pdf_stem, logger)
@@ -501,6 +507,13 @@ def parse_arguments() -> argparse.Namespace:
         "-v", "--verbose",
         action="store_true",
         help="Enable verbose/debug logging output",
+    )
+
+    parser.add_argument(
+        "--use-cuda",
+        action="store_true",
+        help="Use CUDA GPU acceleration for Step 1 (document chunking). "
+             "Default: CPU mode. Requires NVIDIA GPU with CUDA support.",
     )
 
     parser.add_argument(
@@ -563,7 +576,7 @@ def main():
         logger.debug(f"Parsed steps: {steps}")
 
         # Run the pipeline with unified architecture
-        run_pipeline(str(pdf_path), steps, logger)
+        run_pipeline(str(pdf_path), steps, logger, use_cuda=args.use_cuda)
 
     except (FileNotFoundError, ValueError) as e:
         logger.error(f"Error: {e}")

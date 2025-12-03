@@ -1,28 +1,32 @@
 """
 LLM-based factsheet summary generation.
 
-Uses OpenRouter API with Gemini 2.5 Flash for generating professional prose from selected facts.
+Uses unified LLMManager to support Google Gemini, OpenRouter, and xAI providers.
 Falls back to static templates when LLM is unavailable.
 """
 
 import os
 import re
 import json
+import sys
+from pathlib import Path
 from typing import Dict, List, Optional
-import urllib.request
-import urllib.error
+
+# Add extractor pipeline to path to access LLMManager
+pipeline_root = Path(__file__).resolve().parent.parent.parent.parent
+extractor_src = pipeline_root / "esia-fact-extractor-pipeline" / "src"
+sys.path.insert(0, str(extractor_src))
+
+from llm_manager import LLMManager
+from config import LLM_PROVIDER, GOOGLE_MODEL, OPENROUTER_MODEL, XAI_MODEL
 
 from .templates import generate_static_summary
 
 
-# Default configuration
+# Default configuration - now controlled by .env.local
 DEFAULT_CONFIG = {
-    'provider': 'openrouter',
-    'model': 'google/gemini-2.5-flash',
     'max_tokens': 2500,
-    'temperature': 0.3,
-    'api_key_env': 'OPENROUTER_API_KEY',
-    'base_url': 'https://openrouter.ai/api/v1/chat/completions'
+    'temperature': 0.3
 }
 
 # LLM prompt template
@@ -71,18 +75,23 @@ class FactsheetGenerator:
 
         Args:
             config: Optional configuration dictionary with LLM settings
-                - provider: 'openrouter' (default)
-                - model: Model identifier (default: 'google/gemini-2.5-flash-preview')
                 - max_tokens: Maximum tokens in response
                 - temperature: Sampling temperature
-                - api_key_env: Environment variable name for API key
         """
         self.config = {**DEFAULT_CONFIG, **(config or {})}
-        self.model = self.config['model']
         self.max_tokens = self.config['max_tokens']
         self.temperature = self.config['temperature']
-        self.base_url = self.config['base_url']
-        self.api_key_env = self.config['api_key_env']
+
+        # Initialize LLMManager (supports Google, OpenRouter, xAI)
+        self.llm_manager = LLMManager()
+
+        # Get model based on configured provider
+        if LLM_PROVIDER == "google":
+            self.model = GOOGLE_MODEL
+        elif LLM_PROVIDER == "xai":
+            self.model = XAI_MODEL
+        else:
+            self.model = OPENROUTER_MODEL
 
     def generate_summary(
         self,
@@ -135,7 +144,7 @@ class FactsheetGenerator:
 
     def _generate_with_llm(self, selected_facts: Dict[str, List[Dict]]) -> Optional[Dict[str, str]]:
         """
-        Generate summary using OpenRouter API.
+        Generate summary using LLMManager (supports Google, OpenRouter, xAI).
 
         Args:
             selected_facts: Dictionary of domain -> facts
@@ -143,56 +152,41 @@ class FactsheetGenerator:
         Returns:
             Dictionary of section -> paragraph text, or None if failed
         """
-        # Check for API key
-        api_key = os.environ.get(self.api_key_env)
-        if not api_key:
-            print(f"{self.api_key_env} not set. Skipping LLM generation.")
-            return None
-
         # Format facts for prompt
         formatted_facts = self._format_facts_for_prompt(selected_facts)
 
         # Build prompt
         prompt = FACTSHEET_PROMPT.format(structured_facts=formatted_facts)
 
-        # Build request payload
-        payload = {
-            "model": self.model,
-            "messages": [
-                {
-                    "role": "system",
-                    "content": "You are a professional environmental consultant writing ESIA factsheet summaries. Be precise, factual, and include fact ID references."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            "max_tokens": self.max_tokens,
-            "temperature": self.temperature
-        }
-
-        # Make API request
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://github.com/esia-fact-analyzer",
-            "X-Title": "ESIA Fact Analyzer"
-        }
-
-        data = json.dumps(payload).encode('utf-8')
-        req = urllib.request.Request(self.base_url, data=data, headers=headers, method='POST')
+        # System instruction
+        system_instruction = "You are a professional environmental consultant writing ESIA factsheet summaries. Be precise, factual, and include fact ID references."
 
         try:
-            with urllib.request.urlopen(req, timeout=60) as response:
-                result = json.loads(response.read().decode('utf-8'))
-                content = result['choices'][0]['message']['content']
-                return self._parse_llm_response(content)
-        except urllib.error.HTTPError as e:
-            error_body = e.read().decode('utf-8') if e.fp else ''
-            raise Exception(f"API error {e.code}: {error_body}")
-        except urllib.error.URLError as e:
-            raise Exception(f"Network error: {e.reason}")
+            # Use LLMManager to generate content
+            response = self.llm_manager.generate_content(
+                prompt=prompt,
+                model=self.model,
+                provider=LLM_PROVIDER,
+                system_instruction=system_instruction,
+                max_tokens=self.max_tokens,
+                temperature=self.temperature
+            )
+
+            # Extract text from response (handle different response formats)
+            if hasattr(response, 'text'):
+                # Google Gemini response
+                content = response.text
+            elif hasattr(response, 'choices'):
+                # OpenRouter/xAI response
+                content = response.choices[0].message.content
+            else:
+                content = str(response)
+
+            return self._parse_llm_response(content)
+
+        except Exception as e:
+            print(f"LLM generation failed: {e}")
+            return None
 
     def _format_facts_for_prompt(self, selected_facts: Dict[str, List[Dict]]) -> str:
         """Format facts as structured text for LLM prompt."""

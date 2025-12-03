@@ -21,6 +21,7 @@ tqdm>=4.65.0                            # Progress bars for processing feedback
 # Step 2: Fact Extraction Framework
 dspy-ai                                 # DSPy framework for structured extraction with LLM
 google-genai                            # Google Gemini API client (v1 SDK)
+openai>=1.0.0                           # OpenAI SDK (used for OpenRouter and xAI compatibility)
 
 # Step 3: Analysis & Export
 openpyxl                                # Excel (.xlsx) workbook generation
@@ -36,8 +37,8 @@ openpyxl                                # Excel (.xlsx) workbook generation
 # requests                              # HTTP library for LibreTranslate API
 
 # Optional: Alternative LLM Provider (fallback to Gemini)
-# Uncomment if you want to use OpenRouter instead of Google Gemini
-# openrouter                            # OpenRouter API client
+# Note: OpenRouter and xAI support is now built-in via the openai package
+# No additional installation needed for OpenRouter or xAI
 
 # Optional: Environment Configuration
 # Uncomment for automatic .env file loading (recommended for development)
@@ -72,6 +73,8 @@ openpyxl                                # Excel (.xlsx) workbook generation
 #
 #   GOOGLE_API_KEY=your_google_api_key_here
 #   OPENROUTER_API_KEY=your_openrouter_api_key_here  # Optional
+#   XAI_API_KEY=your_xai_api_key_here  # Optional
+#   LLM_PROVIDER=google  # Options: google, openrouter, xai
 #
 # Or set them in your shell before running the pipeline:
 #

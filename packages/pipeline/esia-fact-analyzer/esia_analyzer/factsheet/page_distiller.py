@@ -3,25 +3,31 @@ LLM-based page-by-page fact distillation for Document Factsheet.
 
 Transforms verbose ESIA paragraphs into clear, concise bullet points
 organized by page number for easy cross-referencing.
+
+Uses unified LLMManager to support Google Gemini, OpenRouter, and xAI providers.
 """
 
 import os
 import re
 import json
+import sys
+from pathlib import Path
 from typing import Dict, List, Optional
 from collections import defaultdict
-import urllib.request
-import urllib.error
+
+# Add extractor pipeline to path to access LLMManager
+pipeline_root = Path(__file__).resolve().parent.parent.parent.parent
+extractor_src = pipeline_root / "esia-fact-extractor-pipeline" / "src"
+sys.path.insert(0, str(extractor_src))
+
+from llm_manager import LLMManager
+from config import LLM_PROVIDER, GOOGLE_MODEL, OPENROUTER_MODEL, XAI_MODEL
 
 
-# Default configuration
+# Default configuration - now controlled by .env.local
 DEFAULT_CONFIG = {
-    'provider': 'openrouter',
-    'model': 'google/gemini-2.5-flash',
     'max_tokens': 3000,
     'temperature': 0.3,
-    'api_key_env': 'OPENROUTER_API_KEY',
-    'base_url': 'https://openrouter.ai/api/v1/chat/completions',
     'batch_size': 5,  # Pages per LLM call
     'max_facts_per_page': 15
 }
@@ -84,14 +90,22 @@ class PageDistiller:
             config: Optional configuration dictionary
         """
         self.config = {**DEFAULT_CONFIG, **(config or {})}
-        self.model = self.config['model']
         self.max_tokens = self.config['max_tokens']
         self.temperature = self.config['temperature']
-        self.base_url = self.config['base_url']
-        self.api_key_env = self.config['api_key_env']
         self.batch_size = self.config['batch_size']
         self.max_facts_per_page = self.config['max_facts_per_page']
         self.cache = {}
+
+        # Initialize LLMManager (supports Google, OpenRouter, xAI)
+        self.llm_manager = LLMManager()
+
+        # Get model based on configured provider
+        if LLM_PROVIDER == "google":
+            self.model = GOOGLE_MODEL
+        elif LLM_PROVIDER == "xai":
+            self.model = XAI_MODEL
+        else:
+            self.model = OPENROUTER_MODEL
 
     def distill_document(
         self,
@@ -176,12 +190,7 @@ class PageDistiller:
         return filtered
 
     def _distill_with_llm(self, pages_data: Dict[int, List[Dict]]) -> Dict[int, Dict]:
-        """Distill pages using LLM in batches."""
-        api_key = os.environ.get(self.api_key_env)
-        if not api_key:
-            print(f"{self.api_key_env} not set. Using fallback distillation.")
-            return self._fallback_distill(pages_data)
-
+        """Distill pages using LLMManager in batches."""
         result = {}
         page_numbers = sorted(pages_data.keys())
 
@@ -191,7 +200,7 @@ class PageDistiller:
             batch_data = {p: pages_data[p] for p in batch_pages}
 
             try:
-                batch_result = self._process_batch(batch_data, api_key)
+                batch_result = self._process_batch(batch_data)
                 result.update(batch_result)
             except Exception as e:
                 print(f"Batch {i//self.batch_size + 1} failed: {e}. Using fallback for these pages.")
@@ -200,8 +209,8 @@ class PageDistiller:
 
         return result
 
-    def _process_batch(self, batch_data: Dict[int, List[Dict]], api_key: str) -> Dict[int, Dict]:
-        """Process a batch of pages through LLM."""
+    def _process_batch(self, batch_data: Dict[int, List[Dict]]) -> Dict[int, Dict]:
+        """Process a batch of pages through LLMManager."""
         # Format input for prompt
         formatted_chunks = self._format_chunks_for_prompt(batch_data)
         page_nums = sorted(batch_data.keys())
@@ -214,44 +223,30 @@ class PageDistiller:
             formatted_chunks=formatted_chunks
         )
 
-        # Build request payload
-        payload = {
-            "model": self.model,
-            "messages": [
-                {
-                    "role": "system",
-                    "content": "You are an ESIA document analyst. Extract key facts concisely. Return valid JSON only."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            "max_tokens": self.max_tokens,
-            "temperature": self.temperature
-        }
+        # System instruction
+        system_instruction = "You are an ESIA document analyst. Extract key facts concisely. Return valid JSON only."
 
-        # Make API request
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://github.com/esia-fact-analyzer",
-            "X-Title": "ESIA Fact Analyzer"
-        }
+        # Use LLMManager to generate content
+        response = self.llm_manager.generate_content(
+            prompt=prompt,
+            model=self.model,
+            provider=LLM_PROVIDER,
+            system_instruction=system_instruction,
+            max_tokens=self.max_tokens,
+            temperature=self.temperature
+        )
 
-        data = json.dumps(payload).encode('utf-8')
-        req = urllib.request.Request(self.base_url, data=data, headers=headers, method='POST')
+        # Extract text from response (handle different response formats)
+        if hasattr(response, 'text'):
+            # Google Gemini response
+            content = response.text
+        elif hasattr(response, 'choices'):
+            # OpenRouter/xAI response
+            content = response.choices[0].message.content
+        else:
+            content = str(response)
 
-        try:
-            with urllib.request.urlopen(req, timeout=90) as response:
-                result = json.loads(response.read().decode('utf-8'))
-                content = result['choices'][0]['message']['content']
-                return self._parse_llm_response(content, batch_data)
-        except urllib.error.HTTPError as e:
-            error_body = e.read().decode('utf-8') if e.fp else ''
-            raise Exception(f"API error {e.code}: {error_body}")
-        except urllib.error.URLError as e:
-            raise Exception(f"Network error: {e.reason}")
+        return self._parse_llm_response(content, batch_data)
 
     def _format_chunks_for_prompt(self, batch_data: Dict[int, List[Dict]]) -> str:
         """Format page chunks for LLM prompt."""

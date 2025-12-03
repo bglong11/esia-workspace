@@ -44,6 +44,21 @@ if OPENROUTER_API_KEY:
     except ImportError:
         print("OpenAI package not installed. Install with `pip install openai`")
 
+# Initialize xAI Client
+# xAI (Grok) is also compatible with OpenAI SDK
+XAI_API_KEY = os.getenv("XAI_API_KEY")
+xai_client = None
+if XAI_API_KEY:
+    try:
+        from openai import OpenAI
+        # xAI uses OpenAI-compatible API
+        xai_client = OpenAI(
+            api_key=XAI_API_KEY,
+            base_url="https://api.x.ai/v1"
+        )
+    except ImportError:
+        print("OpenAI package not installed. Install with `pip install openai`")
+
 
 # ============================================================================
 # LLM Configuration from .env.local
@@ -53,6 +68,7 @@ if OPENROUTER_API_KEY:
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "google")
 GOOGLE_MODEL = os.getenv("GOOGLE_MODEL", "gemini-2.5-flash")
 OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-2.5-flash")
+XAI_MODEL = os.getenv("XAI_MODEL", "grok-3-mini")
 LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.3"))
 LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", "2000"))
 
