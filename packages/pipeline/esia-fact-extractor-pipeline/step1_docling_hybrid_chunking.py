@@ -35,10 +35,10 @@ from tqdm import tqdm
 import tempfile
 import re
 
-# CRITICAL: Disable CUDA to avoid heap corruption on post-reboot systems
-# This prevents GPU initialization errors (exit code 3221225794)
-os.environ['CUDA_VISIBLE_DEVICES'] = ''
-os.environ['TORCH_DEVICE'] = 'cpu'
+# GPU Configuration: Allow GPU usage for faster Docling processing
+# Note: If you experience crashes, uncomment the lines below to force CPU mode
+# os.environ['CUDA_VISIBLE_DEVICES'] = ''
+# os.environ['TORCH_DEVICE'] = 'cpu'
 
 # Configure UTF-8 output for Windows console
 if sys.stdout.encoding != 'utf-8':
