@@ -41,9 +41,9 @@ ROOT = Path(__file__).parent
 EXTRACTOR_DIR = ROOT / "esia-fact-extractor-pipeline"
 ANALYZER_DIR = ROOT / "esia-fact-analyzer"
 
-# UNIFIED I/O directories (single source of truth)
-UNIFIED_OUTPUT_DIR = ROOT / "data" / "outputs"
-UNIFIED_INPUT_DIR = ROOT / "data" / "pdfs"
+# UNIFIED I/O directories (single source of truth - workspace root)
+UNIFIED_OUTPUT_DIR = ROOT.parent.parent / "data" / "outputs"
+UNIFIED_INPUT_DIR = ROOT.parent.parent / "data" / "pdf"
 
 # Logging configuration
 LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"

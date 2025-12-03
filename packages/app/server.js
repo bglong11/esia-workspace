@@ -26,8 +26,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Create data/pdf directory if it doesn't exist
-const uploadsDir = path.join(__dirname, 'data', 'pdf');
+// Create workspace root data/pdf directory if it doesn't exist
+const uploadsDir = path.join(__dirname, '..', '..', 'data', 'pdf');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
@@ -168,8 +168,8 @@ app.get('/api/download/:executionId', async (req, res) => {
     // Pipe archive to response
     archive.pipe(res);
 
-    // Define output directory (from pipeline config)
-    const outputDir = path.resolve(__dirname, '../pipeline/data/outputs');
+    // Define output directory (workspace root)
+    const outputDir = path.resolve(__dirname, '../../data/outputs');
 
     // Add all output files for this execution
     // The pipeline uses pdfFilename (with timestamp) as the base for output files

@@ -56,12 +56,12 @@ export const pipelineConfig = {
     },
   ],
 
-  // Output directory for processed files
-  // All pipeline outputs are saved to a single local folder for simplified file management
-  outputDir: './data/output',
+  // Output directory for processed files (workspace root)
+  // All pipeline outputs are saved to workspace root data/outputs for unified access
+  outputDir: '../../data/outputs',
 
   // Metadata directory for pipeline execution records
-  metadataDir: './data/output/metadata',
+  metadataDir: '../../data/outputs/metadata',
 
   // Python executable (customize if needed)
   // Using Python 3.12 from venv312
