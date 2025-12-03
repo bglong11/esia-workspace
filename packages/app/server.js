@@ -181,8 +181,10 @@ app.get('/api/download/:executionId', async (req, res) => {
       `${pdfBase}_chunks.jsonl`,
       `${pdfBase}_meta.json`,
       `${pdfBase}_facts.json`,
-      `${pdfBase}_review.html`,
-      `${pdfBase}_review.xlsx`,
+      `${pdfBase}_analysis.html`,   // Quality analysis dashboard (Step 3)
+      `${pdfBase}_analysis.xlsx`,   // Quality analysis workbook (Step 3)
+      `${pdfBase}_factsheet.html`,  // LLM-generated factsheet (Step 4)
+      `${pdfBase}_factsheet.xlsx`,  // LLM-generated factsheet workbook (Step 4)
     ];
 
     // Add each file if it exists

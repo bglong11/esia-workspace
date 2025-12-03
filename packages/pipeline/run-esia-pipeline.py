@@ -278,7 +278,7 @@ def run_analyzer(pdf_stem: str, logger: logging.Logger) -> None:
     Step 3: Run quality analysis and report generation.
 
     Performs consistency checks, compliance validation, and gap analysis.
-    Generates HTML dashboard and Excel workbook.
+    Generates {stem}_analysis.html dashboard and {stem}_analysis.xlsx workbook.
     Reads from unified ./data/outputs/, writes outputs there too.
 
     Args:
@@ -325,9 +325,9 @@ def run_analyzer(pdf_stem: str, logger: logging.Logger) -> None:
 
 def run_factsheet_generator(pdf_stem: str, logger: logging.Logger) -> None:
     """
-    Step 4 (Optional): Generate ESIA review factsheet in Excel and HTML format.
+    Step 4 (Optional): Generate ESIA factsheet in Excel and HTML format.
 
-    Creates comprehensive Excel workbook and HTML dashboard from extracted facts.
+    Creates {stem}_factsheet.xlsx workbook and {stem}_factsheet.html from extracted facts.
     Reads from unified ./data/outputs/, writes outputs there too.
 
     Args:
@@ -401,8 +401,8 @@ data = {{
 }}
 
 base_name = Path('{pdf_stem}')
-excel_path = output_dir / f"{{base_name}}_review.xlsx"
-html_path = output_dir / f"{{base_name}}_review.html"
+excel_path = output_dir / f"{{base_name}}_factsheet.xlsx"
+html_path = output_dir / f"{{base_name}}_factsheet.html"
 
 generate_excel(excel_path, data)
 build_html_factsheet(html_path, data)

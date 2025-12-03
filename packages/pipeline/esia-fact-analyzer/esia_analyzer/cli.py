@@ -174,8 +174,8 @@ Examples:
 
     # Generate outputs
     base_name = chunks_path.stem.replace("_chunks", "")
-    html_path = output_dir / f"{base_name}_review.html"
-    excel_path = output_dir / f"{base_name}_review.xlsx"
+    html_path = output_dir / f"{base_name}_analysis.html"
+    excel_path = output_dir / f"{base_name}_analysis.xlsx"
 
     reviewer.export_html(html_path)
     reviewer.export_excel(excel_path)
