@@ -510,7 +510,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadComplete, onUploadError
                   )}
                   {step.status === 'running' && step.progress && (
                     <p className="text-xs text-blue-600 mt-1 font-medium">
-                      Processing page {step.progress.currentPage} of {step.progress.totalPages}
+                      Processing {step.progress.currentPage} domains 
                     </p>
                   )}
                   {step.status === 'running' && !step.progress && (
