@@ -2,15 +2,16 @@
 """
 ESIA Pipeline CLI - Unified Document Processing and Analysis Workflow
 
-This orchestrates a unified 3-step pipeline with single input/output directories:
+This orchestrates a unified 4-step pipeline with single input/output directories:
 
 INPUT:  ./data/pdfs/              (PDF/DOCX files to process)
 OUTPUT: ./data/outputs/           (ALL pipeline outputs in one place)
 
-The pipeline consists of three main steps:
+The pipeline consists of four main steps:
 1. Chunk PDF/DOCX into semantic chunks with page tracking
 2. Extract domain-specific facts using archetype-based extraction
 3. Analyze extracted facts for consistency and compliance
+4. Generate interactive fact browser (HTML + Excel) with collapsible tables
 
 Filename sanitization happens first and is used consistently throughout.
 
@@ -22,7 +23,7 @@ Usage:
 
 Examples:
     python run-esia-pipeline.py data/pdfs/ESIA_Report.pdf
-    python run-esia-pipeline.py "Project XYZ (Draft).pdf" --steps 1,2
+    python run-esia-pipeline.py "Project XYZ (Draft).pdf" --steps 1,2,4
     python run-esia-pipeline.py report.pdf --use-cuda --verbose
 """
 
@@ -428,6 +429,62 @@ build_html_factsheet(html_path, data)
         raise
 
 
+def run_fact_browser(pdf_stem: str, logger: logging.Logger) -> None:
+    """
+    Step 4 (Optional): Generate interactive ESIA Fact Browser.
+
+    Creates interactive HTML fact browser with collapsible table row headers
+    and Excel workbook. Reads from unified ./data/outputs/, writes outputs there too.
+
+    Features:
+    - Collapsible table rows grouped in sets of 5
+    - Global search functionality with highlighting
+    - 9 ESIA categories with automatic table classification
+    - Page provenance preserved for every table
+    - Professional styling optimized for reviewers
+
+    Args:
+        pdf_stem: Sanitized PDF filename stem
+        logger: Logger instance for output
+    """
+    logger.info("=" * 70)
+    logger.info("STEP 4: Generating ESIA Fact Browser")
+    logger.info("=" * 70)
+    logger.info(f"Input stem: {pdf_stem}")
+
+    meta_file = UNIFIED_OUTPUT_DIR / f"{pdf_stem}_meta.json"
+
+    # Verify inputs exist
+    if not meta_file.exists():
+        logger.error(f"Meta file not found: {meta_file}")
+        raise FileNotFoundError(f"Meta file not found: {meta_file}")
+
+    cmd = [
+        "python",
+        "build_fact_browser.py",
+        "--input", str(meta_file),
+        "--output", str(UNIFIED_OUTPUT_DIR),
+    ]
+
+    logger.info(f"Command: {' '.join(cmd)}")
+    logger.info(f"Working directory: {ROOT}")
+
+    try:
+        subprocess.run(
+            cmd,
+            cwd=ROOT,
+            check=True,
+            capture_output=False,
+        )
+        logger.info("SUCCESS - Fact browser generation completed successfully")
+        logger.info(f"Generated files:")
+        logger.info(f"  - HTML: {pdf_stem}_fact_browser.html (interactive viewer)")
+        logger.info(f"  - Excel: {pdf_stem}_fact_browser.xlsx (structured data)")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"FAILED - Fact browser generation failed with exit code {e.returncode}")
+        raise
+
+
 def run_pipeline(pdf_path: str, steps: List[int], logger: logging.Logger, use_cuda: bool = False) -> None:
     """
     Execute the ESIA pipeline for specified steps.
@@ -439,7 +496,7 @@ def run_pipeline(pdf_path: str, steps: List[int], logger: logging.Logger, use_cu
 
     Args:
         pdf_path: Path to the PDF/DOCX file
-        steps: List of step numbers to execute (1, 2, or 3)
+        steps: List of step numbers to execute (1, 2, 3, or 4)
         logger: Logger instance for output
         use_cuda: Whether to use CUDA GPU acceleration for Step 1 (default: False)
     """
@@ -469,6 +526,9 @@ def run_pipeline(pdf_path: str, steps: List[int], logger: logging.Logger, use_cu
             # Automatically generate factsheet after Step 3 completes
             run_factsheet_generator(pdf_stem, logger)
 
+        if 4 in steps:
+            run_fact_browser(pdf_stem, logger)
+
         logger.info("=" * 70)
         logger.info("SUCCESS - ESIA Pipeline completed successfully!")
         logger.info(f"All outputs saved to: {UNIFIED_OUTPUT_DIR}")
@@ -497,9 +557,9 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--steps",
         type=str,
-        default="1,2,3",
-        help="Comma-separated list of steps to run (1=chunk, 2=extract, 3=analyze). "
-             "Default: 1,2,3 (all steps)",
+        default="1,2,3,4",
+        help="Comma-separated list of steps to run (1=chunk, 2=extract, 3=analyze, 4=fact-browser). "
+             "Default: 1,2,3,4 (all steps)",
         metavar="STEPS",
     )
 
@@ -533,6 +593,7 @@ def validate_steps(steps_str: str) -> List[int]:
         1 = Document chunking
         2 = Fact extraction
         3 = Quality analysis
+        4 = Fact browser generation (interactive HTML + Excel)
 
     Args:
         steps_str: Comma-separated string of step numbers
@@ -545,11 +606,11 @@ def validate_steps(steps_str: str) -> List[int]:
     """
     try:
         steps = [int(s.strip()) for s in steps_str.split(",")]
-        valid_steps = {1, 2, 3}
+        valid_steps = {1, 2, 3, 4}
 
         for step in steps:
             if step not in valid_steps:
-                raise ValueError(f"Invalid step number: {step}. Valid steps: 1, 2, 3")
+                raise ValueError(f"Invalid step number: {step}. Valid steps: 1, 2, 3, 4")
 
         # Return steps in order
         return sorted(list(set(steps)))

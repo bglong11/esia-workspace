@@ -21,10 +21,10 @@ export const pipelineConfig = {
 
   // Main pipeline orchestrator
   // This runs the complete 4-step ESIA pipeline:
-  // 1. Chunk PDF into semantic chunks with page tracking
-  // 2. Extract domain-specific facts using archetype-based mapping
-  // 3. Analyze extracted facts for consistency and compliance
-  // 4. Generate comprehensive ESIA review factsheet (automatic after Step 3)
+  // 1. Chunk PDF into semantic chunks with page tracking (Docling)
+  // 2. Extract domain-specific facts using archetype-based mapping (DSPy + LLM)
+  // 3. Analyze extracted facts for consistency and compliance + Factsheet generation
+  // 4. Generate interactive fact browser with collapsible tables (HTML + Excel)
 
   // GPU acceleration (set to true to enable CUDA for Step 1)
   useCuda: true,
@@ -53,6 +53,14 @@ export const pipelineConfig = {
       script: '../run-esia-pipeline.py',
       args: ['{PDF_FILE}', '--steps', '3'],
       timeout: 600000, // 10 minutes for analysis + factsheet generation
+    },
+    {
+      id: 'step4_fact_browser',
+      name: 'Step 4: Interactive Fact Browser',
+      description: 'Generating interactive ESIA fact browser with collapsible tables and Excel export...',
+      script: '../run-esia-pipeline.py',
+      args: ['{PDF_FILE}', '--steps', '4'],
+      timeout: 60000, // 1 minute for fact browser generation
     },
   ],
 

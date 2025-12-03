@@ -8,7 +8,7 @@ Write-Host ""
 
 # Configuration - use Get-Location for reliability
 $rootPath = Get-Location
-$appPath = Join-Path $rootPath "packages" "app"
+$appPath = Join-Path -Path (Join-Path -Path $rootPath -ChildPath "packages") -ChildPath "app"
 $backendPort = 5000
 $frontendPort = 3000
 

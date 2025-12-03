@@ -32,6 +32,13 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
+// Create zipped directory for future SaaS implementation
+// Users will access their downloaded zips from here
+const zippedDir = path.join(__dirname, '..', '..', 'data', 'outputs', 'zipped');
+if (!fs.existsSync(zippedDir)) {
+  fs.mkdirSync(zippedDir, { recursive: true });
+}
+
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -165,8 +172,23 @@ app.get('/api/download/:executionId', async (req, res) => {
       res.status(500).json({ message: 'Error creating zip file', error: err.message });
     });
 
-    // Pipe archive to response
+    // FOR SAAS: Also save zip file to zipped directory
+    // This allows users to access their downloads from account storage
+    const zipFilePath = path.join(zippedDir, zipFilename);
+    const writeStream = fs.createWriteStream(zipFilePath);
+
+    writeStream.on('error', (err) => {
+      console.error('[Download] File write error:', err);
+      // Don't fail the download, just log the error
+    });
+
+    writeStream.on('finish', () => {
+      console.log(`[Download] Zip file saved to: ${zipFilePath}`);
+    });
+
+    // Pipe archive to BOTH response (for download) AND file (for storage)
     archive.pipe(res);
+    archive.pipe(writeStream);
 
     // Define output directory (workspace root)
     const outputDir = path.resolve(__dirname, '../../data/outputs');
@@ -181,10 +203,12 @@ app.get('/api/download/:executionId', async (req, res) => {
       `${pdfBase}_chunks.jsonl`,
       `${pdfBase}_meta.json`,
       `${pdfBase}_facts.json`,
-      `${pdfBase}_analysis.html`,   // Quality analysis dashboard (Step 3)
-      `${pdfBase}_analysis.xlsx`,   // Quality analysis workbook (Step 3)
-      `${pdfBase}_factsheet.html`,  // LLM-generated factsheet (Step 4)
-      `${pdfBase}_factsheet.xlsx`,  // LLM-generated factsheet workbook (Step 4)
+      `${pdfBase}_analysis.html`,       // Quality analysis dashboard (Step 3)
+      `${pdfBase}_analysis.xlsx`,       // Quality analysis workbook (Step 3)
+      `${pdfBase}_factsheet.html`,      // LLM-generated factsheet (Step 3)
+      `${pdfBase}_factsheet.xlsx`,      // LLM-generated factsheet workbook (Step 3)
+      `${pdfBase}_fact_browser.html`,   // Interactive fact browser (Step 4)
+      `${pdfBase}_fact_browser.xlsx`,   // Fact browser workbook (Step 4)
     ];
 
     // Add each file if it exists
