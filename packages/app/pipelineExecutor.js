@@ -62,26 +62,32 @@ function executeStep(step, pdfFilename, sanitizedName, uploadedFilePath, executi
 
       console.log(`[Pipeline] Running: ${pipelineConfig.pythonExecutable} ${scriptPath} ${quotedArgs.join(' ')}`);
 
+      // Build environment variables
+      const envVars = {
+        ...process.env,
+        // Force UTF-8 encoding for Python to handle Unicode characters
+        PYTHONIOENCODING: 'utf-8',
+        PYTHONUNBUFFERED: '1',
+        PDF_FILE: uploadedFilePath,
+        SANITIZED_NAME: sanitizedName,
+        ROOT_NAME: sanitizedName.replace(/\.[^/.]+$/, ''),
+        OUTPUT_DIR: outputDir,
+      };
+
+      // Only force CPU mode if CUDA is disabled in config
+      // When useCuda is true, don't set these vars - let the --use-cuda flag control GPU usage
+      if (!pipelineConfig.useCuda) {
+        envVars.CUDA_VISIBLE_DEVICES = '';
+        envVars.TORCH_DEVICE = 'cpu';
+      }
+
       // Spawn the Python process WITHOUT shell to avoid argument parsing issues
       // Shell mode causes problems with spaces in arguments
       const child = spawn(pipelineConfig.pythonExecutable, ['-u', scriptPath, ...args], {
         cwd: path.dirname(scriptPath), // Use script directory as working directory
         timeout: step.timeout,
         shell: false, // Don't use shell to avoid argument splitting issues
-        env: {
-          ...process.env,
-          // Force UTF-8 encoding for Python to handle Unicode characters
-          PYTHONIOENCODING: 'utf-8',
-          PYTHONUNBUFFERED: '1',
-          PDF_FILE: uploadedFilePath,
-          SANITIZED_NAME: sanitizedName,
-          ROOT_NAME: sanitizedName.replace(/\.[^/.]+$/, ''),
-          OUTPUT_DIR: outputDir,
-          // CRITICAL: Disable CUDA to avoid heap corruption on post-reboot systems
-          // This prevents GPU initialization errors (exit code 3221225794)
-          CUDA_VISIBLE_DEVICES: '',
-          TORCH_DEVICE: 'cpu',
-        },
+        env: envVars,
       });
 
       let stdout = '';

@@ -25,13 +25,17 @@ export const pipelineConfig = {
   // 2. Extract domain-specific facts using archetype-based mapping
   // 3. Analyze extracted facts for consistency and compliance
   // 4. Generate comprehensive ESIA review factsheet (automatic after Step 3)
+
+  // GPU acceleration (set to true to enable CUDA for Step 1)
+  useCuda: true,
+
   steps: [
     {
       id: 'step1_chunking',
       name: 'Step 1: Document Chunking',
       description: 'Converting PDF to semantic chunks with page tracking using Docling...',
       script: '../run-esia-pipeline.py',
-      args: ['{PDF_FILE}', '--steps', '1'],
+      args: ['{PDF_FILE}', '--steps', '1', '--use-cuda'],
       timeout: 600000, // 10 minutes for chunking
     },
     {
