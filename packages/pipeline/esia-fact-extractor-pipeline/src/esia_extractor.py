@@ -2,6 +2,7 @@ import sys
 import os
 sys.path.append(os.getcwd())
 import dspy
+from typing import List, Dict
 from src.generated_signatures import (
     AluminaSpecificImpactsSignature,
     AnnexesSignature,
@@ -337,7 +338,154 @@ class ESIAExtractor:
             self.empty_result_cache.add(cache_key)
 
         return facts
-    
+
+    def extract_batched(self, context: str, domains: List[str]) -> Dict[str, Dict]:
+        """
+        Extract facts for multiple domains in a single API call.
+
+        This is more efficient than calling extract() multiple times for the same text
+        because it reduces network overhead and allows the LLM to process all domains
+        in one context window.
+
+        Args:
+            context: The text content to extract from
+            domains: List of domain names to extract (e.g., ['project_description', 'baseline_conditions'])
+
+        Returns:
+            Dictionary mapping domain names to their extracted facts
+            Example: {'project_description': {...}, 'baseline_conditions': {...}}
+        """
+        if not domains:
+            return {}
+
+        # If only one domain, use regular extraction
+        if len(domains) == 1:
+            facts = self.extract(context, domains[0])
+            return {domains[0]: facts} if facts else {}
+
+        # Build combined prompt for all domains
+        print(f"      [BATCH] Extracting {len(domains)} domains in single call")
+
+        # Get schemas for all domains
+        domain_schemas = []
+        for domain in domains:
+            signature_class = self._get_signature_class(domain)
+            if not signature_class:
+                continue
+
+            # Get field names from signature
+            field_names = []
+            for field_name, field_obj in signature_class.fields.items():
+                if field_name != 'context':  # Skip input field
+                    field_names.append(field_name)
+
+            domain_schemas.append({
+                'domain': domain,
+                'fields': field_names
+            })
+
+        if not domain_schemas:
+            return {}
+
+        # Build structured prompt for batched extraction
+        prompt = f"""Extract facts from the following text for MULTIPLE domains.
+Return a valid JSON object with one key per domain.
+
+DOMAINS TO EXTRACT:
+{chr(10).join([f"{i+1}. {schema['domain']}: Extract these fields: {', '.join(schema['fields'][:5])}..." for i, schema in enumerate(domain_schemas)])}
+
+TEXT TO ANALYZE:
+{context[:3000]}...
+
+RESPONSE FORMAT (strict JSON):
+{{
+  "{domain_schemas[0]['domain']}": {{"field_name": "value [Page X]", ...}},
+  "{domain_schemas[1]['domain'] if len(domain_schemas) > 1 else 'domain2'}": {{"field_name": "value [Page X]", ...}}
+}}
+
+CRITICAL INSTRUCTIONS:
+1. Return ONLY valid JSON (no markdown, no code blocks, no explanations)
+2. Include page numbers in brackets for every fact, e.g., "Solar Project [Page 12]"
+3. If a field has no data, omit it (do not use null or empty strings)
+4. Translate values to English if source is in another language
+5. For conflicting information, list all values with their page numbers separated by " | "
+
+JSON Response:"""
+
+        # Make single API call for all domains
+        try:
+            response = self.llm_manager.generate_content(
+                prompt=prompt,
+                model=self.model,
+                provider=self.provider
+            )
+
+            # Extract text from response
+            if hasattr(response, 'text'):
+                response_text = response.text
+            elif hasattr(response, 'choices'):
+                response_text = response.choices[0].message.content
+            else:
+                response_text = str(response)
+
+            # Clean response (remove markdown code blocks if present)
+            response_text = response_text.strip()
+            if response_text.startswith('```'):
+                # Remove markdown code blocks
+                lines = response_text.split('\n')
+                response_text = '\n'.join(lines[1:-1]) if len(lines) > 2 else response_text
+                response_text = response_text.replace('```json', '').replace('```', '').strip()
+
+            # Parse JSON response
+            import json
+            try:
+                all_facts = json.loads(response_text)
+            except json.JSONDecodeError as e:
+                print(f"      [WARN] Failed to parse batched response as JSON: {str(e)[:60]}")
+                print(f"      [WARN] Response preview: {response_text[:200]}")
+                # Fall back to individual extraction
+                return self._fallback_individual_extraction(context, domains)
+
+            # Validate and clean results
+            results = {}
+            for domain in domains:
+                if domain in all_facts and isinstance(all_facts[domain], dict):
+                    facts = all_facts[domain]
+                    # Remove empty values
+                    facts = {k: v for k, v in facts.items() if v and str(v).strip()}
+                    if facts:
+                        results[domain] = facts
+
+            print(f"      [OK] Batched extraction: {len(results)}/{len(domains)} domains with facts")
+            return results
+
+        except Exception as e:
+            print(f"      [WARN] Batched extraction failed: {str(e)[:60]}")
+            print(f"      [WARN] Falling back to individual extraction")
+            return self._fallback_individual_extraction(context, domains)
+
+    def _fallback_individual_extraction(self, context: str, domains: List[str]) -> Dict[str, Dict]:
+        """
+        Fallback method: Extract domains individually if batched extraction fails.
+
+        Args:
+            context: Text content
+            domains: List of domain names
+
+        Returns:
+            Dictionary mapping domain names to extracted facts
+        """
+        results = {}
+        for domain in domains:
+            try:
+                facts = self.extract(context, domain)
+                if facts:
+                    results[domain] = facts
+            except Exception as e:
+                print(f"      [ERR] Individual extraction failed for {domain}: {str(e)[:40]}")
+
+        return results
+
     def extract_all_domains(self, context: str):
         """
         Extract facts from a text chunk for all domains.

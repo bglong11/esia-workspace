@@ -1,10 +1,28 @@
 
 from src.config import client as google_client, openrouter_client, xai_client, openai_client
 from src.config import MAX_RETRIES, INITIAL_RETRY_DELAY, RETRY_BACKOFF_MULTIPLIER
+from src.config import RATE_LIMIT_GOOGLE, RATE_LIMIT_OPENAI, RATE_LIMIT_XAI, RATE_LIMIT_OPENROUTER
 from google import genai
 import os
 import time
 from functools import wraps
+
+# Import rate limiter
+try:
+    from src.rate_limiter import ProviderRateLimiters
+    _rate_limiters = ProviderRateLimiters()
+    # Update rate limiters with config values
+    _rate_limiters.PROVIDER_LIMITS['google'] = RATE_LIMIT_GOOGLE
+    _rate_limiters.PROVIDER_LIMITS['openai'] = RATE_LIMIT_OPENAI
+    _rate_limiters.PROVIDER_LIMITS['xai'] = RATE_LIMIT_XAI
+    _rate_limiters.PROVIDER_LIMITS['openrouter'] = RATE_LIMIT_OPENROUTER
+    # Reinitialize limiters with updated limits
+    _rate_limiters.__init__()
+    RATE_LIMITING_ENABLED = True
+except ImportError:
+    print("Warning: Rate limiter not available, proceeding without rate limiting")
+    _rate_limiters = None
+    RATE_LIMITING_ENABLED = False
 
 
 def retry_on_rate_limit(func):
@@ -103,6 +121,13 @@ class LLMManager:
                 provider = "openrouter"
 
         print(f"Using provider: {provider} for model: {model}")
+
+        # Acquire rate limit token before making API call
+        if RATE_LIMITING_ENABLED and _rate_limiters:
+            # This will block until we're allowed to proceed
+            acquired = _rate_limiters.acquire(provider, timeout=60)
+            if not acquired:
+                raise RuntimeError(f"Rate limiter timeout for provider: {provider}")
 
         if provider == "google":
             return self._generate_google(prompt, model, system_instruction=system_instruction, **kwargs)

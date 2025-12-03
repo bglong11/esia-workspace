@@ -22,6 +22,8 @@ import argparse
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any, Optional
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
 
 # Load environment variables from root .env file
 try:
@@ -58,7 +60,170 @@ def load_chunks(chunks_file: str, sample_size: Optional[int] = None) -> List[Dic
     return chunks
 
 
-def extract_facts(chunks: List[Dict], verbose: bool = False) -> Dict[str, Any]:
+def process_single_section(
+    section_name: str,
+    section_chunks: List[Dict],
+    mapper: 'ArchetypeMapper',
+    extractor: 'ESIAExtractor',
+    section_idx: int,
+    total_sections: int,
+    verbose: bool = False,
+    print_lock: threading.Lock = None
+) -> Optional[Dict[str, Any]]:
+    """
+    Process a single section with domain mapping and extraction.
+
+    This function is designed to be called in parallel by ThreadPoolExecutor.
+
+    Args:
+        section_name: Name of the section
+        section_chunks: List of chunks for this section
+        mapper: ArchetypeMapper instance
+        extractor: ESIAExtractor instance
+        section_idx: Index of this section (for logging)
+        total_sections: Total number of sections
+        verbose: Enable verbose logging
+        print_lock: Thread lock for synchronized printing
+
+    Returns:
+        Section data dict if facts were extracted, None otherwise
+    """
+    def safe_print(*args, **kwargs):
+        """Thread-safe print function."""
+        if print_lock:
+            with print_lock:
+                print(*args, **kwargs)
+        else:
+            print(*args, **kwargs)
+
+    # Check if section should be processed
+    if not mapper.should_process_section(section_name):
+        if verbose:
+            safe_print(f"[{section_idx}/{total_sections}] SKIP: {section_name}")
+        return None
+
+    # Map section to domains
+    domain_matches = mapper.map_section(section_name, top_n=3)
+    if not domain_matches:
+        if verbose:
+            safe_print(f"[{section_idx}/{total_sections}] WARN: No archetype match for {section_name}")
+        return None
+
+    # Filter domains by confidence threshold
+    CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.5"))
+    domain_matches_filtered = [m for m in domain_matches if m['confidence'] >= CONFIDENCE_THRESHOLD]
+
+    if not domain_matches_filtered:
+        if verbose:
+            safe_print(f"[{section_idx}/{total_sections}] SKIP: No domains above confidence {CONFIDENCE_THRESHOLD}")
+        return None
+
+    domain_matches = domain_matches_filtered
+
+    safe_print(f"[{section_idx}/{total_sections}] {section_name}")
+
+    # Combine text from all chunks in this section
+    combined_text = ' '.join([c['text'] for c in section_chunks])
+
+    section_data = {
+        'section': section_name,
+        'page_start': section_chunks[0]['page'],
+        'page_end': section_chunks[-1]['page'],
+        'chunk_count': len(section_chunks),
+        'archetype_matches': [],
+        'extracted_facts': {}
+    }
+
+    # Try to extract facts from matched domains
+    domains_with_facts = 0
+    errors = []
+
+    # Check if batching is enabled
+    enable_batching = os.getenv("EXTRACTION_BATCH_DOMAINS", "true").lower() == "true"
+    max_batch_size = int(os.getenv("EXTRACTION_MAX_BATCH_SIZE", "3"))
+
+    # Decide whether to use batched or individual extraction
+    domains_to_extract = [m['domain'] for m in domain_matches]
+    use_batching = enable_batching and len(domains_to_extract) >= 2 and len(domains_to_extract) <= max_batch_size
+
+    if use_batching:
+        # BATCHED EXTRACTION: Extract all domains in single API call
+        safe_print(f"  [BATCH] Processing {len(domains_to_extract)} domains together")
+
+        try:
+            # Extract all domains at once
+            all_facts = extractor.extract_batched(combined_text, domains_to_extract)
+
+            # Process results
+            for i, match in enumerate(domain_matches, 1):
+                domain = match['domain']
+                confidence = match['confidence']
+
+                # Store match info
+                section_data['archetype_matches'].append({
+                    'domain': domain,
+                    'confidence': confidence,
+                    'subsection': match.get('subsection'),
+                    'matching_keywords': match.get('matching_keywords', [])
+                })
+
+                # Check if facts were extracted for this domain
+                if domain in all_facts and all_facts[domain]:
+                    section_data['extracted_facts'][domain] = all_facts[domain]
+                    domains_with_facts += 1
+                    safe_print(f"    [{i}] {domain} (conf: {confidence}) - {len(all_facts[domain])} fields")
+                else:
+                    safe_print(f"    [{i}] {domain} (conf: {confidence}) - No facts")
+
+        except Exception as e:
+            error_msg = f"Section '{section_name}' (batched): {str(e)[:80]}"
+            errors.append(error_msg)
+            safe_print(f"      [ERR] Batched extraction failed: {str(e)[:60]}")
+
+    else:
+        # INDIVIDUAL EXTRACTION: Extract domains one by one (original behavior)
+        for i, match in enumerate(domain_matches, 1):
+            domain = match['domain']
+            confidence = match['confidence']
+
+            safe_print(f"  [{i}] {domain} (confidence: {confidence})")
+
+            try:
+                # Extract facts using this domain
+                facts = extractor.extract(combined_text, domain)
+
+                if facts:
+                    section_data['extracted_facts'][domain] = facts
+                    domains_with_facts += 1
+                    safe_print(f"      [OK] Extracted {len(facts)} fields")
+                else:
+                    safe_print(f"      - No facts found for this domain")
+
+            except Exception as e:
+                error_msg = f"Section '{section_name}' ({domain}): {str(e)[:80]}"
+                errors.append(error_msg)
+                safe_print(f"      [ERR] {str(e)[:60]}")
+
+            # Store match info
+            section_data['archetype_matches'].append({
+                'domain': domain,
+                'confidence': confidence,
+                'subsection': match.get('subsection'),
+                'matching_keywords': match.get('matching_keywords', [])
+            })
+
+    safe_print()
+
+    # Return section data if facts were extracted
+    if domains_with_facts > 0:
+        section_data['_errors'] = errors
+        section_data['_multi_domain'] = len(domain_matches) > 1
+        return section_data
+
+    return None
+
+
+def extract_facts(chunks: List[Dict], verbose: bool = False, max_workers: int = None) -> Dict[str, Any]:
     """Extract facts from chunks using archetype-based mapping."""
 
     # Initialize components
@@ -99,94 +264,72 @@ def extract_facts(chunks: List[Dict], verbose: bool = False) -> Dict[str, Any]:
     print("=" * 70)
     print()
 
-    section_idx = 0
-    for section_name, section_chunks in sorted(sections.items()):
-        section_idx += 1
+    # Determine number of workers from environment or parameter
+    if max_workers is None:
+        max_workers = int(os.getenv("EXTRACTION_MAX_WORKERS", "4"))
 
-        # Check if section should be processed
-        if not mapper.should_process_section(section_name):
-            if verbose:
-                print(f"[{section_idx}/{len(sections)}] SKIP: {section_name}")
-            results['sections_skipped'] += 1
-            continue
+    print(f"Using parallel processing with {max_workers} workers")
+    print()
 
-        # Map section to domains
-        domain_matches = mapper.map_section(section_name, top_n=3)
-        if not domain_matches:
-            if verbose:
-                print(f"[{section_idx}/{len(sections)}] WARN: No archetype match for {section_name}")
-            results['sections_skipped'] += 1
-            continue
+    # Create thread lock for synchronized printing
+    print_lock = threading.Lock()
 
-        # Filter domains by confidence threshold (Phase 1 optimization)
-        CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.5"))
-        domain_matches_filtered = [m for m in domain_matches if m['confidence'] >= CONFIDENCE_THRESHOLD]
+    # Prepare section processing jobs
+    section_items = list(sorted(sections.items()))
 
-        if not domain_matches_filtered:
-            if verbose:
-                print(f"[{section_idx}/{len(sections)}] SKIP: No domains above confidence {CONFIDENCE_THRESHOLD}")
-            results['sections_skipped'] += 1
-            continue
+    # Process sections in parallel using ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # Submit all section processing jobs
+        future_to_section = {}
+        for idx, (section_name, section_chunks) in enumerate(section_items, 1):
+            future = executor.submit(
+                process_single_section,
+                section_name,
+                section_chunks,
+                mapper,
+                extractor,
+                idx,
+                len(sections),
+                verbose,
+                print_lock
+            )
+            future_to_section[future] = section_name
 
-        domain_matches = domain_matches_filtered
-
-        print(f"[{section_idx}/{len(sections)}] {section_name}")
-
-        # Combine text from all chunks in this section
-        combined_text = ' '.join([c['text'] for c in section_chunks])
-
-        section_data = {
-            'section': section_name,
-            'page_start': section_chunks[0]['page'],
-            'page_end': section_chunks[-1]['page'],
-            'chunk_count': len(section_chunks),
-            'archetype_matches': [],
-            'extracted_facts': {}
-        }
-
-        # Try to extract facts from each matched domain
-        domains_with_facts = 0
-
-        for i, match in enumerate(domain_matches, 1):
-            domain = match['domain']
-            confidence = match['confidence']
-
-            print(f"  [{i}] {domain} (confidence: {confidence})")
+        # Collect results as they complete
+        for future in as_completed(future_to_section):
+            section_name = future_to_section[future]
+            results['sections_processed'] += 1
 
             try:
-                # Extract facts using this domain
-                facts = extractor.extract(combined_text, domain)
+                section_data = future.result()
 
-                if facts:
-                    section_data['extracted_facts'][domain] = facts
-                    domains_with_facts += 1
-                    print(f"      [OK] Extracted {len(facts)} fields")
+                if section_data is None:
+                    # Section was skipped
+                    results['sections_skipped'] += 1
                 else:
-                    print(f"      - No facts found for this domain")
+                    # Extract and remove temporary fields
+                    errors = section_data.pop('_errors', [])
+                    is_multi_domain = section_data.pop('_multi_domain', False)
+
+                    # Add to results
+                    results['sections'][section_name] = section_data
+                    results['sections_with_facts'] += 1
+                    results['errors'].extend(errors)
+
+                    if is_multi_domain:
+                        results['multi_domain_sections'] += 1
 
             except Exception as e:
-                error_msg = f"Section '{section_name}' ({domain}): {str(e)[:80]}"
+                # Catch any unexpected errors from the worker
+                error_msg = f"Unexpected error processing '{section_name}': {str(e)[:80]}"
                 results['errors'].append(error_msg)
-                print(f"      [ERR] {str(e)[:60]}")
+                results['sections_skipped'] += 1
+                with print_lock:
+                    print(f"[ERROR] {error_msg}")
 
-            # Store match info
-            section_data['archetype_matches'].append({
-                'domain': domain,
-                'confidence': confidence,
-                'subsection': match.get('subsection'),
-                'matching_keywords': match.get('matching_keywords', [])
-            })
-
-        print()
-
-        # Only save section if facts were extracted
-        if domains_with_facts > 0:
-            results['sections'][section_name] = section_data
-            results['sections_with_facts'] += 1
-            if len(domain_matches) > 1:
-                results['multi_domain_sections'] += 1
-
-        results['sections_processed'] += 1
+    print()
+    print(f"[OK] Parallel processing completed: {results['sections_processed']} sections processed")
+    print()
 
     return results
 
@@ -216,6 +359,12 @@ def main():
         action='store_true',
         help='Verbose output'
     )
+    parser.add_argument(
+        '--max-workers',
+        type=int,
+        default=None,
+        help='Number of parallel workers (default: 4, or EXTRACTION_MAX_WORKERS env var)'
+    )
 
     args = parser.parse_args()
 
@@ -242,7 +391,7 @@ def main():
     # Extract facts
     print("Extracting facts with archetype-based section mapping...")
     print()
-    results = extract_facts(chunks, verbose=args.verbose)
+    results = extract_facts(chunks, verbose=args.verbose, max_workers=args.max_workers)
 
     # Save results
     print()

@@ -93,3 +93,34 @@ STORE_NAME_PREFIX = "esia_store_"
 MAX_RETRIES = 3  # Reduced from 4 since Tier 1 has better quotas
 INITIAL_RETRY_DELAY = 5  # seconds (reduced from 30 - Gemini recovers quickly)
 RETRY_BACKOFF_MULTIPLIER = 2.0  # 5s -> 10s -> 20s delays (total: 35s vs previous 142.5s)
+
+# ============================================================================
+# Step 2 Optimization Settings (Phase 1)
+# ============================================================================
+
+# Parallel Processing
+EXTRACTION_MAX_WORKERS = int(os.getenv("EXTRACTION_MAX_WORKERS", "4"))
+# Number of parallel workers for section processing
+# Recommended: 4-8 depending on provider rate limits
+# Higher values may trigger rate limiting
+
+# Provider-Specific Rate Limits (requests per minute)
+# These are used by the RateLimiter to pace API calls
+RATE_LIMIT_GOOGLE = int(os.getenv("RATE_LIMIT_GOOGLE", "60"))      # Gemini Tier 1
+RATE_LIMIT_OPENAI = int(os.getenv("RATE_LIMIT_OPENAI", "60"))      # OpenAI Tier 1
+RATE_LIMIT_XAI = int(os.getenv("RATE_LIMIT_XAI", "60"))            # xAI Grok
+RATE_LIMIT_OPENROUTER = int(os.getenv("RATE_LIMIT_OPENROUTER", "50"))  # OpenRouter (conservative)
+
+# ============================================================================
+# Step 2 Optimization Settings (Phase 2) - Batched Domain Extraction
+# ============================================================================
+
+# Batched Domain Extraction
+EXTRACTION_BATCH_DOMAINS = os.getenv("EXTRACTION_BATCH_DOMAINS", "true").lower() == "true"
+# Enable batching of multi-domain extractions into single API calls
+# Reduces API calls by 30-40% for sections with multiple domains
+# Recommended: true (disable only for debugging)
+
+EXTRACTION_MAX_BATCH_SIZE = int(os.getenv("EXTRACTION_MAX_BATCH_SIZE", "3"))
+# Maximum number of domains to batch in a single call
+# Recommended: 2-4 (higher values may reduce quality or exceed token limits)
