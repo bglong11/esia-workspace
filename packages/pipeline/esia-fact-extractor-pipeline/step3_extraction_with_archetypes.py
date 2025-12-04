@@ -25,12 +25,13 @@ from typing import List, Dict, Any, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 
-# Load environment variables from root .env file
+# Load environment variables from project root .env.local (SINGLE SOURCE OF TRUTH)
 try:
     from dotenv import load_dotenv
-    # Load from workspace root: esia-workspace/.env
-    root_env = os.path.join(os.path.dirname(__file__), '..', '..', '..', '.env')
-    load_dotenv(root_env)
+    # Load from project root: esia-ai/.env.local
+    # Path: esia-workspace/packages/pipeline/esia-fact-extractor-pipeline/ -> go up 4 levels
+    root_env = os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '.env.local')
+    load_dotenv(root_env, override=False)  # Don't override parent process env
 except ImportError:
     pass  # dotenv not required, use system env vars
 

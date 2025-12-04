@@ -3,21 +3,20 @@ from pathlib import Path
 from dotenv import load_dotenv
 from google import genai
 
-# Load environment variables from workspace root .env.local
-# Path calculation: config.py is in packages/pipeline/esia-fact-extractor-pipeline/src/
-# So we need to go up 4 levels to reach workspace root:
-# src/ -> esia-fact-extractor-pipeline/ -> pipeline/ -> packages/ -> workspace root
+# Load environment variables from project root .env.local
+# Path calculation: config.py is in esia-workspace/packages/pipeline/esia-fact-extractor-pipeline/src/
+# So we need to go up 5 levels to reach esia-ai project root:
+# src/ -> esia-fact-extractor-pipeline/ -> pipeline/ -> packages/ -> esia-workspace/ -> esia-ai/
 config_file_path = Path(__file__).resolve()  # Absolute path to config.py
-workspace_root = config_file_path.parent.parent.parent.parent.parent  # Go up 5 levels
+project_root = config_file_path.parent.parent.parent.parent.parent.parent  # Go up 6 levels to esia-ai
 
-# Try .env.local first, then .env
-env_local_path = workspace_root / ".env.local"
-env_path = workspace_root / ".env"
+# Try project root .env.local first (SINGLE SOURCE OF TRUTH)
+env_local_path = project_root / ".env.local"
 
+# Only load from file if env vars aren't already set by parent process
+# This allows pipelineExecutor.js to pass env vars that take precedence
 if env_local_path.exists():
-    load_dotenv(env_local_path, override=True)  # override=True to update existing vars
-elif env_path.exists():
-    load_dotenv(env_path, override=True)  # Use .env if .env.local doesn't exist
+    load_dotenv(env_local_path, override=False)  # override=False: don't override parent process env
 else:
     load_dotenv()  # Fallback to default behavior
 

@@ -2,7 +2,7 @@
 Configuration management for ESIA Pipeline.
 
 Loads configuration from environment variables and config files.
-Supports .env files for API keys and pipeline settings.
+Uses project root .env.local as SINGLE SOURCE OF TRUTH.
 """
 
 import os
@@ -25,15 +25,19 @@ class Config:
             config_dir = Path(__file__).parent
 
         self.config_dir = config_dir
-        self.env_file = config_dir / ".env"
+
+        # Use project root .env.local as SINGLE SOURCE OF TRUTH
+        # Path: esia-workspace/packages/pipeline/ -> go up 3 levels to esia-ai/
+        project_root = Path(__file__).resolve().parent.parent.parent.parent
+        self.env_file = project_root / ".env.local"
         self._load_config()
 
     def _load_config(self) -> None:
         """Load configuration from .env file and environment variables."""
-        # Try to load .env file
+        # Try to load .env file (override=False: don't override parent process env)
         if self.env_file.exists():
             try:
-                load_dotenv(self.env_file)
+                load_dotenv(self.env_file, override=False)
             except NameError:
                 # dotenv not installed, try manual loading
                 self._load_env_file()
