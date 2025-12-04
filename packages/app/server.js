@@ -196,7 +196,8 @@ app.get('/api/download/:executionId', async (req, res) => {
     // Add all output files for this execution
     // The pipeline uses pdfFilename (with timestamp) as the base for output files
     // Extract the base name: remove extension from pdfFilename
-    const pdfBase = execution.pdfFilename.replace(/\.[^/.]+$/, '');
+    // IMPORTANT: Python pipeline converts ALL hyphens to underscores in sanitization
+    const pdfBase = execution.pdfFilename.replace(/\.[^/.]+$/, '').replace(/-/g, '_');
 
     // List of expected output files
     const outputFiles = [
